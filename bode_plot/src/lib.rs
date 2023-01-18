@@ -16,7 +16,7 @@ pub const DEFAULT_HEIGHT: usize = 500;
 
 const FRAME_RATE: f64 = 60.0;
 
-/// Asynchronously opens a window displaying the bode plot of the given transfer function.
+/// Asynchronously opens a window displaying the bode plot of the given transfer function with linear scale.
 /// # Arguments
 /// * `name` - The name displayed on the window
 /// * `width` - The width of the window (can use [`crate::DEFAULT_WIDTH`])
@@ -24,7 +24,21 @@ const FRAME_RATE: f64 = 60.0;
 /// * `t_fns` - A list of trait objects used to generate the bode plot
 pub fn create_plot(name: String, width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<(), Box<dyn Error>> {
     let bode_plot = BodePlot::from_list(width, height, t_fns)?;
+    create_plot_backend(name, width, height, bode_plot)
+}
 
+/// Asynchronously opens a window displaying the bode plot of the given transfer function with logarithmic scale.
+/// # Arguments
+/// * `name` - The name displayed on the window
+/// * `width` - The width of the window (can use [`crate::DEFAULT_WIDTH`])
+/// * `height` - The height of the window (can use [`crate::DEFAULT_HEIGHT`])
+/// * `t_fns` - A list of trait objects used to generate the bode plot
+pub fn create_log_plot(name: String, width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<(), Box<dyn Error>> {
+    let bode_plot = BodePlot::from_list_log(width, height, t_fns)?;
+    create_plot_backend(name, width, height, bode_plot)
+}
+
+fn create_plot_backend(name: String, width: usize, height: usize, bode_plot: BodePlot) -> Result<(), Box<dyn Error>> {
     let start_ts = SystemTime::now();
     let mut last_flushed = 0.0;
     std::thread::spawn(move || {
@@ -50,6 +64,7 @@ pub fn create_plot(name: String, width: usize, height: usize, t_fns: Vec<&dyn Bo
     Ok(())
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -70,12 +85,12 @@ mod tests {
         Ok(())
     }
     fn create_band_pass() -> Result<(), Box<dyn Error>> {
-        create_plot("TEST PLOT".into(), DEFAULT_WIDTH, DEFAULT_HEIGHT, vec![&RealZeroTransferFunction(1.0) as &dyn BodePlotTransferFunction, &RealZeroTransferFunction(-1.0) as &dyn BodePlotTransferFunction])?;
+        create_log_plot("TEST PLOT".into(), DEFAULT_WIDTH, DEFAULT_HEIGHT, vec![&RealZeroTransferFunction(1.0) as &dyn BodePlotTransferFunction, &RealZeroTransferFunction(-1.0) as &dyn BodePlotTransferFunction])?;
         Ok(())
     }
 
     #[test]
-    fn test_basic_low_pass() {
+    fn test_basic_filters() {
         create_basic_low_pass().unwrap();
         create_band_pass().unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));

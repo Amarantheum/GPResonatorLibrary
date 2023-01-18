@@ -19,9 +19,7 @@ pub(super) struct BodePlot {
 }
 
 impl BodePlot {
-    /// This function constructs a chart state given a list of transfer functions.
-    #[allow(unused)]
-    pub fn from_list(width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<Self, Box<dyn Error>> {
+    fn new(width: usize, height: usize, path: Vec<(f64, f64)>, min_y: f64, max_y: f64) -> Result<Self, Box<dyn Error>> {
         let mut buf = PixelBuffer::new(width, height);
         
         // begin constructing chart
@@ -30,27 +28,11 @@ impl BodePlot {
                 BitMapBackend::<BGRXPixel>::with_buffer_and_format(buf.borrow_mut(), (width as u32, height as u32))?
                     .into_drawing_area();
             root.fill(&BLACK)?;
-    
-            // build line plot from given transfer functions
-            let mut path = Vec::with_capacity(width + 1);
-            let mut max = f64::MIN;
-            for i in 0..=width {
-                let arg = i as f64 / width as f64 * PI;
-                let z = Complex::<f64>::from_polar(1_f64, arg);
-                let mut cur = 0_f64;
-                for tfn in &t_fns {
-                    cur += tfn.get_value(z).abs();
-                }
-                if cur > max {
-                    max = cur;
-                }
-                path.push((i as f64 / width as f64, cur));
-            }
 
             let mut chart = ChartBuilder::on(&root)
                 .margin(10)
                 .set_all_label_area_size(30)
-                .build_cartesian_2d(0.0..1_f64, 0.0..max)?;
+                .build_cartesian_2d(0.0..1_f64, min_y..max_y)?;
     
             chart
                 .configure_mesh()
@@ -71,6 +53,48 @@ impl BodePlot {
                 height,
             }
         )
+    }
+    /// This function constructs a chart state given a list of transfer functions.
+    pub fn from_list(width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<Self, Box<dyn Error>> {
+        // build line plot from given transfer functions
+        let mut path = Vec::with_capacity(width + 1);
+        let mut max = f64::MIN;
+        for i in 0..=width {
+            let arg = i as f64 / width as f64 * PI;
+            let z = Complex::<f64>::from_polar(1_f64, arg);
+            let mut cur = 0_f64;
+            for tfn in &t_fns {
+                cur += tfn.get_value(z).abs();
+            }
+            if cur > max {
+                max = cur;
+            }
+            path.push((i as f64 / width as f64, cur));
+        }
+        Self::new(width, height, path, 0.0, max)
+    }
+
+    pub fn from_list_log(width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<Self, Box<dyn Error>> {
+        // build line plot from given transfer functions
+        let mut path = Vec::with_capacity(width + 1);
+        let mut max = f64::MIN;
+        let mut min = f64::MAX;
+        for i in 0..=width {
+            let arg = i as f64 / width as f64 * PI;
+            let z = Complex::<f64>::from_polar(1_f64, arg);
+            let mut cur = 0_f64;
+            for tfn in &t_fns {
+                cur += tfn.get_value(z).abs().log10();
+            }
+            if cur > max {
+                max = cur;
+            }
+            if cur < min {
+                min = cur;
+            }
+            path.push((i as f64 / width as f64, cur));
+        }
+        Self::new(width, height, path, min.max(-8.0), max)
     }
 }
 
