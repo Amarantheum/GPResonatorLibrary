@@ -1,11 +1,8 @@
 use plot::{BodePlot, BodePlotTransferFunction};
 use minifb::{Key, Window, WindowOptions};
-use plotters::prelude::*;
-use plotters::{backend::BGRXPixel};
 use std::error::Error;
 use std::time::SystemTime;
-use pixel_buffer::PixelBuffer;
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::{Borrow};
 
 mod pixel_buffer;
 pub mod plot;
