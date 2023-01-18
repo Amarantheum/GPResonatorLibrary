@@ -11,7 +11,7 @@ use std::f64::consts::PI;
 
 /// Type that stores data about a bode plot and is used to display bode plots in windows
 #[allow(unused)]
-pub struct BodePlot {
+pub(super) struct BodePlot {
     chart: ChartState<Cartesian2d<RangedCoordf64, RangedCoordf64>>,
     pub pixel_buf: PixelBuffer,
     width: usize,
@@ -21,7 +21,7 @@ pub struct BodePlot {
 impl BodePlot {
     /// This function constructs a chart state given a list of transfer functions.
     #[allow(unused)]
-    pub fn from_list(width: usize, height: usize, t_fns: Vec<Box<&dyn BodePlotTransferFunction>>) -> Result<Self, Box<dyn Error>> {
+    pub fn from_list(width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<Self, Box<dyn Error>> {
         let mut buf = PixelBuffer::new(width, height);
         
         // begin constructing chart
@@ -74,6 +74,10 @@ impl BodePlot {
     }
 }
 
+/// Trait for objects that can be interpretted as a plotable transfer function
 pub trait BodePlotTransferFunction {
+    /// Takes a complex value on the Z plane and returns the output of the transfer function at that point
+    /// # Arguments
+    /// * `z` - A complex value in the Z plane
     fn get_value(&self, z: Complex<f64>) -> Complex<f64>;
 }
