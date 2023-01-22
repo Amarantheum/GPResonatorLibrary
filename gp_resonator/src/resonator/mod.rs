@@ -1,6 +1,10 @@
+//! This module contains useful abstractions for resonating filters.
+//! You are probably looking for [`ConjPoleResonator`].
+
 use bode_plot::plot::BodePlotTransferFunction;
 use num_complex::Complex;
 
+/// Represents a filter with 2 conjugate poles on the Z-plane with a gain amount
 pub struct ConjPoleResonator {
     /// The real part of the pole location doubled
     re_2: f64,
@@ -11,6 +15,12 @@ pub struct ConjPoleResonator {
 }
 
 impl ConjPoleResonator {
+    /// Create a new [`ConjPoleResonator`] given a complex number in polar form.
+    /// The poles will be at the location of the complex number and its conjugate.
+    /// # Arguments
+    /// * `mag` - The magnitude of the complex number
+    /// * `arg` - The argument of the commplex number
+    /// * `gain` - The gain of the filter
     #[inline]
     pub fn new_polar(mag: f64, arg: f64, gain: f64) -> Self {
         Self {
@@ -19,11 +29,15 @@ impl ConjPoleResonator {
             gain,
         }
     }
+
+    // The difference equation for the filter
     #[inline]
-    pub fn process(&self, x: &Vec<f64>, y: &mut Vec<f64>, n: usize) {
+    fn process(&self, x: &Vec<f64>, y: &mut Vec<f64>, n: usize) {
         y[n] = self.gain * x[n] - self.re_2 * y[n - 1] - self.mag_sq * y[n - 2];
     }
 
+    /// Returns the locations of the two poles in the filter
+    /// The first returned pole will have a positive imaginary component.
     #[inline]
     pub fn get_pole_locs(&self) -> (Complex<f64>, Complex<f64>) {
         let theta = (self.re_2 / 2.0 / self.mag_sq.sqrt()).acos();

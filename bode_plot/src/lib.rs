@@ -1,3 +1,6 @@
+//! A simple library for displaying bode plots in windows.
+//! Implement [`crate::plot::BodePlotTransferFunction`] for your own type and pass into [`create_plot`] or [`create_log_plot`] to display the frequency response of the transfer function.
+
 use plot::{BodePlot, BodePlotTransferFunction};
 use minifb::{Key, Window, WindowOptions};
 use std::error::Error;

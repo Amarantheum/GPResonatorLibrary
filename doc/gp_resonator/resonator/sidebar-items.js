@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ConjPoleResonator","Represents a filter with 2 conjugate poles on the Z-plane with a gain amount"]]};

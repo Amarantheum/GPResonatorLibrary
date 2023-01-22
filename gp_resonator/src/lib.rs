@@ -1,4 +1,7 @@
-mod resonator;
+//! This crate contains abstractions for creating general purpose resonators.
+//! A general purpose resonator is an array of resonators that can be used to create resonances at arbitrary frequencies for real-time audio.
+
+pub mod resonator;
 
 #[cfg(test)]
 mod tests {

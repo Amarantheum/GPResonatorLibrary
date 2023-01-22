@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["BodePlotTransferFunction","Trait for objects that can be interpretted as a plotable transfer function"]]};
