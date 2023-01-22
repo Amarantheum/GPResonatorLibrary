@@ -4,7 +4,8 @@
 use bode_plot::plot::BodePlotTransferFunction;
 use num_complex::Complex;
 
-/// Represents a filter with 2 conjugate poles on the Z-plane with a gain amount
+/// Represents a filter with 2 conjugate poles on the Z-plane with a gain amount.
+/// This results in frequencies closer to the argument of the poles being amplified.
 pub struct ConjPoleResonator {
     /// The real part of the pole location doubled
     re_2: f64,
