@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"gp_resonator":[["impl <a class=\"trait\" href=\"bode_plot/plot/trait.BodePlotTransferFunction.html\" title=\"trait bode_plot::plot::BodePlotTransferFunction\">BodePlotTransferFunction</a> for <a class=\"struct\" href=\"gp_resonator/resonator/struct.ConjPoleResonator.html\" title=\"struct gp_resonator::resonator::ConjPoleResonator\">ConjPoleResonator</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
