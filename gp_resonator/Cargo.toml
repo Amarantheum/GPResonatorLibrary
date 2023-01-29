@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 bode_plot = { path = "../bode_plot" }
+hound = "3.5.0"
 num-complex = "0.4.2"
+statrs = "0.16.0"

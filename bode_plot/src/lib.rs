@@ -1,7 +1,7 @@
 //! A simple library for displaying bode plots in windows.
 //! Implement [`crate::plot::BodePlotTransferFunction`] for your own type and pass into [`create_plot`] or [`create_log_plot`] to display the frequency response of the transfer function.
 
-use plot::{BodePlot, BodePlotTransferFunction};
+use plot::{BodePlot, BodePlotTransferFunction, LTISystem};
 use minifb::{Key, Window, WindowOptions};
 use std::error::Error;
 use std::time::SystemTime;
@@ -38,6 +38,11 @@ pub fn create_plot(name: String, width: usize, height: usize, t_fns: Vec<&dyn Bo
 /// * `t_fns` - A list of trait objects used to generate the bode plot
 pub fn create_log_plot(name: String, width: usize, height: usize, t_fns: Vec<&dyn BodePlotTransferFunction>) -> Result<(), Box<dyn Error>> {
     let bode_plot = BodePlot::from_list_log(width, height, t_fns)?;
+    create_plot_backend(name, width, height, bode_plot)
+}
+
+pub fn create_simulation_plot(name: String, width: usize, height: usize, systems: Vec<&dyn LTISystem>) -> Result<(), Box<dyn Error>> {
+    let bode_plot = BodePlot::from_list_sim(width, height, systems)?;
     create_plot_backend(name, width, height, bode_plot)
 }
 

@@ -96,6 +96,49 @@ impl BodePlot {
         }
         Self::new(width, height, path, min.max(-8.0), max)
     }
+
+    // generate cos samples
+    #[inline]
+    fn gen_cos_samples(w: f64, len: usize) -> Vec<f64> {
+        let mut out = Vec::with_capacity(len);
+        for i in 0..len {
+            out.push((i as f64 * w).cos());
+        }
+        out
+    }
+
+    #[inline]
+    fn hann_window(samples: &mut Vec<f64>) {
+        for i in 0..samples.len() {
+            samples[i] *= ((2.0 * PI * i as f64 / samples.len() as f64 + PI).cos() + 1_f64) * 0.5;
+        }
+    }
+
+
+    pub fn from_list_sim(width: usize, height: usize, systems: Vec<&dyn LTISystem>) -> Result<Self, Box<dyn Error>> {
+        let mut path = Vec::with_capacity(width + 1);
+        let mut max = 0.0;
+        for i in 0..=width {
+            let arg = i as f64 / width as f64 * PI;
+            let mut samples = Self::gen_cos_samples(arg, 1000);
+            let mut total = 0.0;
+            for sys in &systems {
+                let processed = sys.process(&samples);
+                let mut tmp_max = 0.0;
+                for v in processed {
+                    if v.abs() > tmp_max {
+                        tmp_max = v.abs();
+                    }
+                }
+                total += tmp_max
+            }
+            if total > max {
+                max = total;
+            }
+            path.push((i as f64 / width as f64, total));
+        }
+        Self::new(width, height, path, 0.0, max)
+    }
 }
 
 /// Trait for objects that can be interpretted as a plotable transfer function
@@ -104,4 +147,8 @@ pub trait BodePlotTransferFunction {
     /// # Arguments
     /// * `z` - A complex value in the Z plane
     fn get_value(&self, z: Complex<f64>) -> Complex<f64>;
+}
+
+pub trait LTISystem {
+    fn process(&self, samples: &Vec<f64>) -> Vec<f64>;
 }
