@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"gp_resonator":[["impl <a class=\"trait\" href=\"bode_plot/plot/trait.BodePlotTransferFunction.html\" title=\"trait bode_plot::plot::BodePlotTransferFunction\">BodePlotTransferFunction</a> for <a class=\"struct\" href=\"gp_resonator/resonator/struct.ConjPoleResonator.html\" title=\"struct gp_resonator::resonator::ConjPoleResonator\">ConjPoleResonator</a>"]]
+"gp_resonator":[["impl BodePlotTransferFunction for <a class=\"struct\" href=\"gp_resonator/resonator/struct.ConjPoleResonator.html\" title=\"struct gp_resonator::resonator::ConjPoleResonator\">ConjPoleResonator</a>"],["impl BodePlotTransferFunction for <a class=\"struct\" href=\"gp_resonator/resonator_array/struct.ConjPoleResonatorArray.html\" title=\"struct gp_resonator::resonator_array::ConjPoleResonatorArray\">ConjPoleResonatorArray</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ConjPoleResonatorArray","A resonator composed of a dynamic number of [`ConjPoleResonator`]s. See [`ConjPoleResonatorArray::process_buf`]."]]};

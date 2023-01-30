@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["resonator","This module contains useful abstractions for resonating filters. You are probably looking for [`ConjPoleResonator`]."]]};
+window.SIDEBAR_ITEMS = {"mod":[["resonator","This module contains useful abstractions for resonating filters. You are probably looking for [`ConjPoleResonator`]."],["resonator_array","This module contains implementations for resonator arrays."]]};

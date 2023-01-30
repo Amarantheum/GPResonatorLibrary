@@ -52,14 +52,45 @@
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains useful abstractions for resonating filters.
 //! You are probably looking for [`ConjPoleResonator`].
 
-</span><span class="kw">use </span>bode_plot::plot::BodePlotTransferFunction;
+</span><span class="kw">use </span>bode_plot::plot::{BodePlotTransferFunction, LTISystem};
 <span class="kw">use </span>num_complex::Complex;
 
 <span class="doccomment">/// Represents a filter with 2 conjugate poles on the Z-plane with a gain amount.
 /// This results in frequencies closer to the argument of the poles being amplified.
+</span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>ConjPoleResonator {
     <span class="doccomment">/// The real part of the pole location doubled
     </span>re_2: f64,
@@ -85,10 +116,33 @@
         }
     }
 
-    <span class="comment">// The difference equation for the filter
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>process_vec(<span class="kw-2">&amp;</span><span class="self">self</span>, x: <span class="kw-2">&amp;</span>Vec&lt;f64&gt;) -&gt; Vec&lt;f64&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[<span class="number">0.0</span>; x.len()];
+        <span class="kw">if </span>x.len() &gt; <span class="number">1 </span>{
+            buf[<span class="number">1</span>] = <span class="self">self</span>.gain * x[<span class="number">0</span>];
+            <span class="self">self</span>.process_buf(<span class="kw-2">&amp;</span>x[..], <span class="kw-2">&amp;mut </span>buf[..]);
+        }
+        <span class="kw">return </span>buf
+    }
+
+    <span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>process_buf(<span class="kw-2">&amp;</span><span class="self">self</span>, x: <span class="kw-2">&amp;</span>[f64], buf: <span class="kw-2">&amp;mut </span>[f64]) {
+        <span class="macro">debug_assert!</span>(x.len() == buf.len());
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..buf.len() {
+            buf[i] = x[i-<span class="number">1</span>] * <span class="self">self</span>.gain + <span class="self">self</span>.re_2 * buf[i - <span class="number">1</span>] - <span class="self">self</span>.mag_sq * buf[i - <span class="number">2</span>];
+        }
+    }
+
+    <span class="doccomment">/// Process a single data point given the required values from the difference equation
+    /// and returns `y[n]`. Prefer [`Self::process_buf`] or [`Self::process_buf_add`] for better cache performance.
+    /// # Arguments
+    /// * `x_1` - value of `x[n-1]`
+    /// * `y_1` - value of `y[n-1]`
+    /// * `y_2` - value of `y[n-2]`
     </span><span class="attr">#[inline]
-    </span><span class="kw">fn </span>process(<span class="kw-2">&amp;</span><span class="self">self</span>, x: <span class="kw-2">&amp;</span>Vec&lt;f64&gt;, y: <span class="kw-2">&amp;mut </span>Vec&lt;f64&gt;, n: usize) {
-        y[n] = <span class="self">self</span>.gain * x[n] - <span class="self">self</span>.re_2 * y[n - <span class="number">1</span>] - <span class="self">self</span>.mag_sq * y[n - <span class="number">2</span>];
+    </span><span class="kw">pub fn </span>process_single(<span class="kw-2">&amp;</span><span class="self">self</span>, x_1: f64, y_1: f64, y_2: f64) -&gt; f64 {
+        x_1 * <span class="self">self</span>.gain + <span class="self">self</span>.re_2 * y_1 - <span class="self">self</span>.mag_sq * y_2
     }
 
     <span class="doccomment">/// Returns the locations of the two poles in the filter
@@ -104,6 +158,12 @@
     <span class="kw">fn </span>get_value(<span class="kw-2">&amp;</span><span class="self">self</span>, z: Complex&lt;f64&gt;) -&gt; Complex&lt;f64&gt; {
         <span class="kw">let </span>poles = <span class="self">self</span>.get_pole_locs();
         ((z - poles.<span class="number">0</span>) * (z - poles.<span class="number">1</span>)).inv().scale(<span class="self">self</span>.gain)
+    }
+}
+
+<span class="kw">impl </span>LTISystem <span class="kw">for </span>ConjPoleResonator {
+    <span class="kw">fn </span>process(<span class="kw-2">&amp;</span><span class="self">self</span>, samples: <span class="kw-2">&amp;</span>Vec&lt;f64&gt;) -&gt; Vec&lt;f64&gt; {
+        <span class="self">self</span>.process_vec(samples)
     }
 }</code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="gp_resonator" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (5ce39f42b 2023-01-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-ab1d4ae2ec52020e.css" ></div></body></html>

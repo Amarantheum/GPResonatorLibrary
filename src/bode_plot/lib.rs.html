@@ -99,10 +99,15 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
 </pre><pre class="rust"><code><span class="doccomment">//! A simple library for displaying bode plots in windows.
 //! Implement [`crate::plot::BodePlotTransferFunction`] for your own type and pass into [`create_plot`] or [`create_log_plot`] to display the frequency response of the transfer function.
 
-</span><span class="kw">use </span>plot::{BodePlot, BodePlotTransferFunction};
+</span><span class="kw">use </span>plot::{BodePlot, BodePlotTransferFunction, LTISystem};
 <span class="kw">use </span>minifb::{Key, Window, WindowOptions};
 <span class="kw">use </span>std::error::Error;
 <span class="kw">use </span>std::time::SystemTime;
@@ -139,6 +144,11 @@
 /// * `t_fns` - A list of trait objects used to generate the bode plot
 </span><span class="kw">pub fn </span>create_log_plot(name: String, width: usize, height: usize, t_fns: Vec&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>BodePlotTransferFunction&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
     <span class="kw">let </span>bode_plot = BodePlot::from_list_log(width, height, t_fns)<span class="question-mark">?</span>;
+    create_plot_backend(name, width, height, bode_plot)
+}
+
+<span class="kw">pub fn </span>create_simulation_plot(name: String, width: usize, height: usize, systems: Vec&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>LTISystem&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    <span class="kw">let </span>bode_plot = BodePlot::from_list_sim(width, height, systems)<span class="question-mark">?</span>;
     create_plot_backend(name, width, height, bode_plot)
 }
 
