@@ -15,12 +15,19 @@ mod tests {
     use statrs::statistics::*;
 
     #[test]
+    fn test_single_bode_plot() {
+        let test_transfer1 = ConjPoleResonator::new_polar(0.9, 3.14159 / 4.0, 1.0);
+        create_plot("TEST PLOT".into(), DEFAULT_WIDTH, DEFAULT_HEIGHT, vec![&test_transfer1 as &dyn BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
     fn test_basic_bode_plot() {
         let test_transfer1 = ConjPoleResonator::new_polar(0.5, 3.14159 / 2.0, 1.0);
         let test_transfer2 = ConjPoleResonator::new_polar(0.5, 3.14159 / 4.0, 1.0);
         let test_transfer3 = ConjPoleResonator::new_polar(0.5, 3.14159 / 4.0 * 3.0, 1.0);
         create_plot("TEST PLOT".into(), DEFAULT_WIDTH, DEFAULT_HEIGHT, vec![&test_transfer1 as &dyn BodePlotTransferFunction, &test_transfer2 as &dyn BodePlotTransferFunction, &test_transfer3 as &dyn BodePlotTransferFunction]).unwrap();
-        std::thread::sleep(std::time::Duration::from_secs(5));
+        std::thread::sleep(std::time::Duration::from_secs(1000));
     }
 
     #[test]

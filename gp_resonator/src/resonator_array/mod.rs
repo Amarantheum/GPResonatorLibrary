@@ -103,14 +103,19 @@ impl ConjPoleResonatorArray {
     /// Add a resonator with given intensity and gain to the array.
     /// # Arguments
     /// * `freq` - the frequency of the resonator in Hz
-    /// * `intensity` - the modulus of the pole in the complex plane (must be in range [0, 1) for stable system)
+    /// * `decay` - the time in seconds for the signal to reach 10% amplitude
     /// * `gain` - the gain of the resonator output (amplitude)
-    pub fn add_resonator(&mut self, freq: f64, intensity: f64, gain: f64) -> Result<(), &'static str> {
+    /// Maybe change intensity to feedback?
+    pub fn add_resonator(&mut self, freq: f64, decay: f64, gain: f64) -> Result<(), &'static str> {
         if freq > self.sample_rate / 2.0 {
             return Err("frequency exceeds the nyquist limit")
         }
         let arg = 2.0 * PI * freq / self.sample_rate;
-        self.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(intensity, arg, gain)));
+        let decay_samples = decay * self.sample_rate;
+        let r = 0.1_f64.powf(1.0 / decay_samples);
+        // normalize gain
+        let gain = gain * r * arg.sin();
+        self.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(r, arg, gain)));
         Ok(())
     }
 }
@@ -137,7 +142,7 @@ mod tests {
     #[test]
     fn test_add_resonator() {
         let mut array = ConjPoleResonatorArray::new(48_000.0, 1);
-        array.add_resonator(440.0, 0.9999, 1.0);
+        array.add_resonator(440.0, 1.0, 1.0).unwrap();
 
         let [chan1, chan2] = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
@@ -154,7 +159,7 @@ mod tests {
     fn test_harmonic_resonator() {
         let mut array = ConjPoleResonatorArray::new(48_000.0, 1);
         for i in 1..54 * 8 + 1 {
-            array.add_resonator(55.0 * i as f64, 0.9999, 1.0).unwrap();
+            array.add_resonator(55.0 * i as f64, 0.1, 1.0).unwrap();
         }
         let [chan1, chan2] = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
@@ -169,5 +174,13 @@ mod tests {
         write_wave([out_chan1, out_chan2], "audio/test_harmonic_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_decay_math() {
+        // decay = 10 samples
+        let decay = 1_f64 * 48_000_f64;
+        let r = 0.00001_f64.powf(1.0 / decay);
+        println!("{}", r);
     }
 }
