@@ -3,9 +3,18 @@
 
 use plot::{BodePlot, BodePlotTransferFunction, LTISystem};
 use minifb::{Key, Window, WindowOptions};
+use plotters::coord::ranged1d::AsRangedCoord;
 use std::error::Error;
 use std::time::SystemTime;
 use std::borrow::{Borrow};
+use plotters::chart::ChartState;
+use plotters::coord::types::RangedCoordf64;
+use plotters::prelude::*;
+use plotters::{backend::BGRXPixel};
+use pixel_buffer::PixelBuffer;
+use std::borrow::{BorrowMut};
+use colors::*;
+use std::ops::Range;
 
 mod pixel_buffer;
 pub mod plot;
@@ -64,6 +73,62 @@ fn create_plot_backend(name: String, width: usize, height: usize, bode_plot: Bod
     
             if epoch - last_flushed > 1.0 / FRAME_RATE {
                 window.update_with_buffer(bode_plot.pixel_buf.borrow(), width, height).unwrap();
+                last_flushed = epoch;
+            }
+        }
+    });
+    
+    Ok(())
+}
+
+fn basic_plot(width: usize, height: usize, path: Vec<(f64, f64)>, x_spec: Range<f64>, y_spec: Range<f64>) -> Result<(ChartState<Cartesian2d<RangedCoordf64, RangedCoordf64>>, PixelBuffer), Box<dyn Error>> {
+    let mut buf = PixelBuffer::new(width, height);
+    
+    // begin constructing chart
+    let cs = {
+        let root =
+            BitMapBackend::<BGRXPixel>::with_buffer_and_format(buf.borrow_mut(), (width as u32, height as u32))?
+                .into_drawing_area();
+        root.fill(&BLACK)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .margin(10)
+            .set_all_label_area_size(30)
+            .build_cartesian_2d(x_spec, y_spec)?;
+        chart
+            .configure_mesh()
+            .label_style(("sans-serif", 15).into_font().color(&LIGHT_BLUE))
+            .axis_style(&LIGHT_BLUE)
+            .draw()?;
+        
+        chart.draw_series(vec![PathElement::new(path, &LIGHT_BLUE)]).unwrap();
+        let cs = chart.into_chart_state();
+        root.present()?;
+        cs
+    };
+    Ok((cs, buf))
+}
+
+
+pub fn create_generic_plot(name: String, width: usize, height: usize, path: Vec<(f64, f64)>, x_spec: Range<f64>, y_spec: Range<f64>) -> Result<(), Box<dyn Error>> {
+    let (_cs, buf) = basic_plot(width, height, path, x_spec, y_spec)?;
+    let start_ts = SystemTime::now();
+    let mut last_flushed = 0.0;
+    std::thread::spawn(move || {
+        let mut window = Window::new(
+            name.as_str(),
+            width,
+            height,
+            WindowOptions::default(),
+        ).unwrap();
+        while window.is_open() && !window.is_key_down(Key::Escape) {
+            let epoch = SystemTime::now()
+                .duration_since(start_ts)
+                .unwrap()
+                .as_secs_f64();
+    
+            if epoch - last_flushed > 1.0 / FRAME_RATE {
+                window.update_with_buffer(buf.borrow(), width, height).unwrap();
                 last_flushed = epoch;
             }
         }

@@ -1,0 +1,13 @@
+[package]
+name = "resonator_builder"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gp_resonator = { path = "../gp_resonator" }
+bode_plot = { path = "../bode_plot" }
+statrs = "0.16.0"
+levenberg-marquardt = "0.13.0"
+nalgebra = "0.32.1"

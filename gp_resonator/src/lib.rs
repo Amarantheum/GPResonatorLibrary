@@ -1,6 +1,7 @@
 //! This crate contains abstractions for creating general purpose resonators.
 //! A general purpose resonator is an array of resonators that can be used to create resonances at arbitrary frequencies for real-time audio.
 //! You are probably looking for [`crate::resonator_array::ConjPoleResonatorArray`].
+pub use num_complex::Complex;
 
 pub mod resonator;
 pub mod resonator_array;
