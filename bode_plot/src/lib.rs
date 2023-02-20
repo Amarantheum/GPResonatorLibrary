@@ -109,9 +109,74 @@ fn basic_plot(width: usize, height: usize, path: Vec<(f64, f64)>, x_spec: Range<
     Ok((cs, buf))
 }
 
+fn basic_plot_w_scatter(width: usize, height: usize, path: Vec<(f64, f64)>, x_spec: Range<f64>, y_spec: Range<f64>, scatter: Vec<(f64, f64)>) -> Result<(ChartState<Cartesian2d<RangedCoordf64, RangedCoordf64>>, PixelBuffer), Box<dyn Error>> {
+    let mut buf = PixelBuffer::new(width, height);
+    
+    // begin constructing chart
+    let cs = {
+        let root =
+            BitMapBackend::<BGRXPixel>::with_buffer_and_format(buf.borrow_mut(), (width as u32, height as u32))?
+                .into_drawing_area();
+        root.fill(&BLACK)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .margin(10)
+            .set_all_label_area_size(30)
+            .build_cartesian_2d(x_spec, y_spec)?;
+        chart
+            .configure_mesh()
+            .label_style(("sans-serif", 15).into_font().color(&LIGHT_BLUE))
+            .axis_style(&LIGHT_BLUE)
+            .draw()?;
+        
+        chart.draw_series(vec![PathElement::new(path, &LIGHT_BLUE)]).unwrap();
+        chart.draw_series(PointSeries::of_element(
+            scatter,
+            5,
+            &RED,
+            &|c, s, st| {
+                return EmptyElement::at(c)    // We want to construct a composed element on-the-fly
+                + Circle::new((0,0),s,st.filled()) // At this point, the new pixel coordinate is established
+                + Text::new(format!("{:?}", c), (10, 0), ("sans-serif", 10).into_font());
+            },
+        ))?;
+        let cs = chart.into_chart_state();
+        root.present()?;
+        cs
+    };
+    Ok((cs, buf))
+}
+
 
 pub fn create_generic_plot(name: String, width: usize, height: usize, path: Vec<(f64, f64)>, x_spec: Range<f64>, y_spec: Range<f64>) -> Result<(), Box<dyn Error>> {
     let (_cs, buf) = basic_plot(width, height, path, x_spec, y_spec)?;
+    let start_ts = SystemTime::now();
+    let mut last_flushed = 0.0;
+    std::thread::spawn(move || {
+        let mut window = Window::new(
+            name.as_str(),
+            width,
+            height,
+            WindowOptions::default(),
+        ).unwrap();
+        while window.is_open() && !window.is_key_down(Key::Escape) {
+            let epoch = SystemTime::now()
+                .duration_since(start_ts)
+                .unwrap()
+                .as_secs_f64();
+    
+            if epoch - last_flushed > 1.0 / FRAME_RATE {
+                window.update_with_buffer(buf.borrow(), width, height).unwrap();
+                last_flushed = epoch;
+            }
+        }
+    });
+    
+    Ok(())
+}
+
+pub fn create_generic_plot_scatter(name: String, width: usize, height: usize, path: Vec<(f64, f64)>, scatter: Vec<(f64, f64)>, x_spec: Range<f64>, y_spec: Range<f64>) -> Result<(), Box<dyn Error>> {
+    let (_cs, buf) = basic_plot_w_scatter(width, height, path, x_spec, y_spec, scatter)?;
     let start_ts = SystemTime::now();
     let mut last_flushed = 0.0;
     std::thread::spawn(move || {

@@ -144,7 +144,7 @@ mod tests {
         let mut array = ConjPoleResonatorArray::new(48_000.0, 1);
         array.add_resonator(440.0, 1.0, 1.0).unwrap();
 
-        let [chan1, chan2] = read_wave("audio/test_noise.wav").unwrap();
+        let ([chan1, chan2], _) = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
         let mut out_chan2 = out_chan1.clone();
 
@@ -161,7 +161,7 @@ mod tests {
         for i in 1..54 * 8 + 1 {
             array.add_resonator(55.0 * i as f64, 0.1, 1.0).unwrap();
         }
-        let [chan1, chan2] = read_wave("audio/test_noise.wav").unwrap();
+        let ([chan1, chan2], _) = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
         let mut out_chan2 = out_chan1.clone();
 
