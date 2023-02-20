@@ -135,9 +135,9 @@ mod tests {
     use std::time::Instant;
 
     use bode_plot::{create_plot, DEFAULT_WIDTH, DEFAULT_HEIGHT};
+    use wav_util::*;
 
     use super::*;
-    use crate::wav_util::*;
 
     #[test]
     fn test_add_resonator() {

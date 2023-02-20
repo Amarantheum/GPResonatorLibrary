@@ -1,14 +1,10 @@
 [package]
-name = "gp_resonator"
+name = "wav_util"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bode_plot = { path = "../bode_plot" }
-wav_util = { path = "../wav_util" }
 hound = "3.5.0"
-num-complex = "0.4.2"
-rand = "0.8.5"
 statrs = "0.16.0"

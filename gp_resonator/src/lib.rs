@@ -5,13 +5,11 @@ pub use num_complex::Complex;
 
 pub mod resonator;
 pub mod resonator_array;
-mod wav_util;
 
 #[cfg(test)]
 mod tests {
-    use bode_plot::{create_log_plot, create_plot, plot::{BodePlotTransferFunction, LTISystem}, DEFAULT_WIDTH, DEFAULT_HEIGHT, create_simulation_plot}; 
-    use num_complex::Complex;
-    use std::{error::Error, f64::consts::PI};
+    use bode_plot::{create_plot, plot::{BodePlotTransferFunction, LTISystem}, DEFAULT_WIDTH, DEFAULT_HEIGHT, create_simulation_plot}; 
+    use std::{f64::consts::PI};
     use crate::resonator::ConjPoleResonator;
     use statrs::statistics::*;
 

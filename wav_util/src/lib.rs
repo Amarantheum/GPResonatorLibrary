@@ -2,6 +2,7 @@ use std::error::Error;
 use std::path::Path;
 use statrs::statistics::*;
 
+/// Read a 2 channel wav file into an array of vectors
 #[allow(dead_code)]
 pub fn read_wave<P:AsRef<Path>>(path: P) -> Result<[Vec<f64>; 2], Box<dyn Error>> {
     let mut reader = hound::WavReader::open(path)?;
@@ -24,8 +25,10 @@ pub fn read_wave<P:AsRef<Path>>(path: P) -> Result<[Vec<f64>; 2], Box<dyn Error>
     )
 }
 
+/// Given a set of two vectors representing audio channels to a wav file
 #[allow(dead_code)]
 pub fn write_wave<P: AsRef<Path>>(mut audio: [Vec<f64>; 2], path: P, sample_rate: u32) -> Result<(), Box<dyn Error>> {
+    assert!(audio[0].len() == audio[1].len());
     let spec = hound::WavSpec {
         channels: 2,
         sample_rate: sample_rate,
@@ -42,6 +45,7 @@ pub fn write_wave<P: AsRef<Path>>(mut audio: [Vec<f64>; 2], path: P, sample_rate
     Ok(())
 }
 
+/// Normalizes the signal if the maximum amplitude is greater than 1.0 (uses the absolute value of the amplitude)
 #[allow(dead_code)]
 pub fn scale_audio(audio: &mut [Vec<f64>; 2]) {
     let max = [(&audio[0]).abs_max(), (&audio[1]).abs_max()].max();

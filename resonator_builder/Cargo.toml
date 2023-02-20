@@ -8,6 +8,10 @@ edition = "2021"
 [dependencies]
 gp_resonator = { path = "../gp_resonator" }
 bode_plot = { path = "../bode_plot" }
+wav_util = { path = "../wav_util" }
 statrs = "0.16.0"
 levenberg-marquardt = "0.13.0"
 nalgebra = "0.32.1"
+find_peaks = "0.1.5"
+rustfft = "6.1.0"
+rand = "0.8.5"
