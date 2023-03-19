@@ -27,9 +27,6 @@ fn find_peak_left_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &[
         cur_index -= 1;
         prev_height = data[cur_index];
     }
-    if cur_index == peak.middle_position() {
-        println!("BRUH");
-    }
     cur_index
 }
 
@@ -49,12 +46,11 @@ fn find_peak_right_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &
         cur_index += 1;
         prev_height = data[cur_index];
     }
-    if cur_index == peak.middle_position() {
-        println!("BRUH");
-    }
     cur_index
 }
 
+// TODO: bug when setting min_freq to something other than 0.0 (frequency shifted)
+// max_num_peaks unused
 pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: usize, min_freq: f64, max_freq: f64) -> Result<ConjPoleResonatorArray, Box<dyn Error>> {
     assert!(audio.len() > 0);
     let near_pow_2 = ((audio.len() - 1).ilog2() + 1) as usize;
@@ -148,7 +144,7 @@ pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: 
     // build resonator array
     let mut resonator_array = ConjPoleResonatorArray::new(48_000_f64, soln.len());
     for (g, params) in soln.iter().zip(resonator_params.iter()) {
-        resonator_array.add_resonator_raw(ConjPoleResonator::new_polar(params.r, params.w_0, *g));
+        resonator_array.add_resonator_raw(ConjPoleResonator::new_polar(params.r, params.w_0, *g * params.w_0.sin()));
     }
 
     Ok(resonator_array)
@@ -171,7 +167,7 @@ mod tests {
     #[test]
     fn test_find_peaks() {
         let ([chan1, chan2], sample_rate) = read_wave("./tests/piano.wav").unwrap();
-        let mut array = audio_to_resonator_array(&chan1[..], sample_rate as f64, 100, 0.0, sample_rate as f64 / 4.0).unwrap();
+        let mut array = audio_to_resonator_array(&chan1[..], sample_rate as f64, 100, 0.0, sample_rate as f64 / 2.0).unwrap();
         let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
         let mut out_chan2 = out_chan1.clone();
@@ -183,6 +179,25 @@ mod tests {
         array.process_buf(&chan2[..], &mut out_chan2[..]);
 
         write_wave([out_chan1, out_chan2], "./tests/test_piano_resonator.wav", 48_000).unwrap();
+        create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_find_peaks_fm() {
+        let ([chan1, chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
+        let mut array = audio_to_resonator_array(&chan1[..], sample_rate as f64, 100, 0.0, sample_rate as f64 / 2.0).unwrap();
+        let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
+        let mut out_chan1 = vec![0_f64; chan1.len()];
+        let mut out_chan2 = out_chan1.clone();
+
+        let start = std::time::Instant::now();
+        array.process_buf(&chan1[..], &mut out_chan1[..]);
+        println!("Took {}s to process signal", start.elapsed().as_secs_f64());
+        array.reset_state();
+        array.process_buf(&chan2[..], &mut out_chan2[..]);
+
+        write_wave([out_chan1, out_chan2], "./tests/test_fm_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
