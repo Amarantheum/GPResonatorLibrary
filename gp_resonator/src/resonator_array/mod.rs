@@ -118,6 +118,10 @@ impl ConjPoleResonatorArray {
         self.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(r, arg, gain)));
         Ok(())
     }
+
+    pub fn add_resonator_raw(&mut self, resonator: ConjPoleResonator) {
+        self.resonators.push((ConjPoleResonatorState::default(), resonator))
+    }
 }
 
 impl BodePlotTransferFunction for ConjPoleResonatorArray {

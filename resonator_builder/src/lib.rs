@@ -9,42 +9,25 @@ use statrs::statistics::Statistics;
 use find_peaks::{PeakFinder, Peak};
 
 mod resonance_estimator;
+mod simple_builder;
 mod fft;
 
 fn find_peak_left_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &[f64]) -> usize {
-    let low_threshold = if let Some(v) = neighbor {
-        if v.height.unwrap() - v.prominence.as_ref().unwrap() > peak.height.unwrap() {
-            (peak.height.unwrap() - peak.prominence.unwrap()) / 2.0
-        } else {
-            (peak.height.unwrap() - peak.prominence.unwrap()).max(v.height.unwrap() - v.prominence.unwrap()) / 2.0
-        }
-    } else {
-        (peak.height.unwrap() - peak.prominence.unwrap()) / 2.0
-    };
-    let mut cur_index = peak.middle_position();
-    let mut prev_height = f64::MAX;
-    while cur_index > 0 && (data[cur_index] > low_threshold || data[cur_index - 1] < prev_height) {
+    let mut cur_index = peak.middle_position() - 10;
+    let mut prev_index = peak.middle_position();
+    while cur_index > 0 && data[cur_index] < data[prev_index] {
         cur_index -= 1;
-        prev_height = data[cur_index];
+        prev_index -= 1;
     }
     cur_index
 }
 
 fn find_peak_right_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &[f64]) -> usize {
-    let low_threshold = if let Some(v) = neighbor {
-        if v.height.unwrap() - v.prominence.as_ref().unwrap() > peak.height.unwrap() {
-            (peak.height.unwrap() - peak.prominence.unwrap()) / 2.0
-        } else {
-            (peak.height.unwrap() - peak.prominence.unwrap()).max(v.height.unwrap() - v.prominence.unwrap()) / 2.0
-        }
-    } else {
-        (peak.height.unwrap() - peak.prominence.unwrap()) / 2.0
-    };
-    let mut cur_index = peak.middle_position();
-    let mut prev_height = f64::MAX;
-    while cur_index < data.len() - 1 && (data[cur_index] > low_threshold || data[cur_index + 1] < prev_height)  {
+    let mut cur_index = peak.middle_position() + 10;
+    let mut prev_index = peak.middle_position();
+    while cur_index < data.len() - 1 && data[cur_index] < data[prev_index]  {
         cur_index += 1;
-        prev_height = data[cur_index];
+        prev_index += 1;
     }
     cur_index
 }
@@ -63,6 +46,7 @@ pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: 
     let spec_slice = &spectrum[min_bin..max_bin];
     let log_spec_slice = &log_spectrum[min_bin..max_bin];
 
+    bode_plot::create_generic_plot("spectrum".into(), 4000, 800, log_spec_slice.iter().enumerate().map(|v| (v.0 as f64, *v.1)).collect::<Vec<(f64, f64)>>(), min_bin as f64..max_bin as f64, -5.0..log_spec_slice.max())?;
     // TODO: custom peak finding algorithm for performance
     let mut peaks = PeakFinder::new(log_spec_slice)
         .with_min_prominence(1.0)
@@ -94,6 +78,11 @@ pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: 
         prev = iter_prev.next();
         next = iter_next.next();
     }
+    println!("GOT: {} peaks", peaks.len());
+    // for r in &peak_points {
+    //     let scatter = r.0.iter().zip(r.1.iter()).map(|v| (*v.0, *v.1)).collect::<Vec<(f64, f64)>>();
+    //     bode_plot::create_generic_plot_scatter("spectrum".into(), 800, 800, vec![], scatter, r.0[0]..r.0[r.0.len() - 1], 0.0..(&r.1).max())?;
+    // }
 
     let mut resonator_params = Vec::with_capacity(peaks.len());
     // vector we use to solve system later (Ax = b)
@@ -131,9 +120,14 @@ pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: 
     for p1 in &resonator_params {
         for p2 in &resonator_params {
             // effect of p1 on p2
-            system_arr.push(p1.predict_r_influence(p2.w_0))
+            system_arr.push(p2.predict_r_influence(p1.w_0))
         }
     }
+
+    let scatter = peaks.into_iter().map(|v| (v.middle_position() as f64, v.height.unwrap())).collect::<Vec<(f64, f64)>>();
+
+    let spectrum_plot = spectrum[min_bin..max_bin].iter().zip(min_bin..max_bin).map(|(f, u)| (u as f64, *f)).collect::<Vec<(f64, f64)>>();
+    bode_plot::create_generic_plot_scatter("spectrum".into(), 4000, 800, spectrum_plot, scatter, min_bin as f64..max_bin as f64, -5.0..spectrum.max())?;
     
     // set up system
     let system = DMatrix::from_row_slice(resonator_params.len(), resonator_params.len(), &system_arr);
@@ -187,17 +181,16 @@ mod tests {
     fn test_find_peaks_fm() {
         let ([chan1, chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
         let mut array = audio_to_resonator_array(&chan1[..], sample_rate as f64, 100, 0.0, sample_rate as f64 / 2.0).unwrap();
-        let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
-        let mut out_chan1 = vec![0_f64; chan1.len()];
-        let mut out_chan2 = out_chan1.clone();
+        
+        let mut impulse = vec![0_f64; 48_000 * 10];
+        impulse[0] = 1.0;
+        let mut out = vec![0_f64; 48_000 * 10];
 
         let start = std::time::Instant::now();
-        array.process_buf(&chan1[..], &mut out_chan1[..]);
+        array.process_buf(&impulse, &mut out[..]);
         println!("Took {}s to process signal", start.elapsed().as_secs_f64());
-        array.reset_state();
-        array.process_buf(&chan2[..], &mut out_chan2[..]);
 
-        write_wave([out_chan1, out_chan2], "./tests/test_fm_resonator.wav", 48_000).unwrap();
+        write_wave([out.clone(), out], "./tests/test_fm_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
