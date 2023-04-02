@@ -9,8 +9,8 @@ use statrs::statistics::Statistics;
 use find_peaks::{PeakFinder, Peak};
 
 mod resonance_estimator;
-mod simple_builder;
-mod fft;
+pub mod simple_builder;
+pub mod fft;
 
 fn find_peak_left_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &[f64]) -> usize {
     let mut cur_index = peak.middle_position() - 10;
