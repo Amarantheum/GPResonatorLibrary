@@ -3,6 +3,7 @@ use gp_resonator::{resonator_array::ConjPoleResonatorArray, resonator};
 use std::{error::Error, f64::consts::PI};
 use find_peaks::{PeakFinder, Peak};
 
+
 /// Converts the index in the log_spec_slice spectrum to a frequency
 /// 
 fn slice_index_to_freq(log_spec_index: usize, min_bin: usize, spec_size: usize, sample_rate: f64) -> f64 {

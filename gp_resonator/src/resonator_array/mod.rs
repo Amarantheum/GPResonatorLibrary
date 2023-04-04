@@ -105,12 +105,25 @@ impl ConjPoleResonatorArray {
     /// * `freq` - the frequency of the resonator in Hz
     /// * `decay` - the time in seconds for the signal to reach 10% amplitude
     /// * `gain` - the gain of the resonator output (amplitude)
-    /// Maybe change intensity to feedback?
+    #[inline]
     pub fn add_resonator(&mut self, freq: f64, decay: f64, gain: f64) -> Result<(), &'static str> {
-        if freq > self.sample_rate / 2.0 {
+        let arg = 2.0 * PI * freq / self.sample_rate;
+        self.add_resonator_theta(arg, decay, gain)
+    }
+
+    /// Add a resonator with given intensity and gain to the array.
+    /// # Arguments
+    /// * `theta` - the frequency of the resonator in radians
+    /// * `decay` - the time in seconds for the signal to reach 10% amplitude
+    /// * `gain` - the gain of the resonator output (amplitude)
+    #[inline]
+    pub fn add_resonator_theta(&mut self, arg: f64, decay: f64, gain: f64) -> Result<(), &'static str> {
+        if arg > PI / 2.0 {
             return Err("frequency exceeds the nyquist limit")
         }
-        let arg = 2.0 * PI * freq / self.sample_rate;
+        if arg < 0.0 {
+            return Err("frequency must be positive")
+        }
         let decay_samples = decay * self.sample_rate;
         let r = 0.1_f64.powf(1.0 / decay_samples);
         // normalize gain

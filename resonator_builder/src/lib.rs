@@ -11,6 +11,7 @@ use find_peaks::{PeakFinder, Peak};
 mod resonance_estimator;
 pub mod simple_builder;
 pub mod fft;
+pub mod scaled_builder;
 
 fn find_peak_left_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &[f64]) -> usize {
     let mut cur_index = peak.middle_position() - 10;
@@ -34,7 +35,7 @@ fn find_peak_right_bound(peak: &Peak<f64>, neighbor: Option<&Peak<f64>>, data: &
 
 // TODO: bug when setting min_freq to something other than 0.0 (frequency shifted)
 // max_num_peaks unused
-pub fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: usize, min_freq: f64, max_freq: f64) -> Result<ConjPoleResonatorArray, Box<dyn Error>> {
+fn audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_peaks: usize, min_freq: f64, max_freq: f64) -> Result<ConjPoleResonatorArray, Box<dyn Error>> {
     assert!(audio.len() > 0);
     let near_pow_2 = ((audio.len() - 1).ilog2() + 1) as usize;
     let spec_size = 2_usize.pow(near_pow_2 as u32);
