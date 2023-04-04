@@ -6,7 +6,7 @@ use gp_resonator::resonator_array::ConjPoleResonatorArray;
 #[derive(Debug, Clone)]
 pub struct ScaledResonatorPlan {
     /// Each value corresponds to (theta, gain) for a resonator
-    resonators: Vec<(f64, f64)>,
+    pub resonators: Vec<(f64, f64)>,
 }
 
 impl ScaledResonatorPlan {
