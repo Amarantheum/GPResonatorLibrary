@@ -106,11 +106,8 @@ impl ScaledResonatorPlanner {
         let spectrum = calc.real_fft(audio, Rectangular::real_window).into_iter().map(|v| v.norm()).collect::<Vec<f64>>();
         let log_spectrum = spectrum.iter().map(|v| v.log10()).collect::<Vec<f64>>();
 
-        let min_freq = self.min_freq.unwrap_or(0.0);
-        let max_freq = self.max_freq.unwrap_or(1.0) * sample_rate;
-
-        let min_bin = (min_freq / sample_rate * spec_size as f64 / 2.0).floor() as usize;
-        let max_bin = (max_freq / sample_rate * spec_size as f64 / 2.0).floor() as usize;
+        let min_bin = (self.min_freq.unwrap_or(0.0) * spec_size as f64 / 2.0).floor() as usize;
+        let max_bin = (self.max_freq.unwrap_or(1.0) * spec_size as f64 / 2.0).floor() as usize;
         
         let spec_slice = &spectrum[min_bin..max_bin];
         let log_spec_slice = &log_spectrum[min_bin..max_bin];
@@ -170,9 +167,10 @@ mod tests {
 
         let plan = ScaledResonatorPlanner::new()
             .with_max_num_peaks(20)
+            .with_min_freq(0.0)
+            .with_min_prominence(1.0)
             .plan(&chan1[..], sample_rate as f64);
 
-        println!("{:?}", plan);
         let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
 
         let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
