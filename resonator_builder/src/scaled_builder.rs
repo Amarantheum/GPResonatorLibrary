@@ -25,7 +25,21 @@ impl ScaledResonatorPlan {
         }
         Ok(res_array)
     }
+
+    pub fn iter(&self) -> std::slice::Iter<(f64, f64)> {
+        self.resonators.iter()
+    }
 }
+
+impl IntoIterator for ScaledResonatorPlan {
+    type Item = (f64, f64);
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.resonators.into_iter()
+    }
+}
+
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct ScaledResonatorPlanner {
