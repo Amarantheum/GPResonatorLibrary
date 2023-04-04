@@ -94,7 +94,7 @@ impl ScaledResonatorPlanner {
     }
 
     pub fn plan(&self, audio: &[f64], sample_rate: f64) -> ScaledResonatorPlan {
-        if audio.len() > 3 {
+        if audio.len() < 3 {
             return ScaledResonatorPlan {
                 resonators: vec![],
             }
