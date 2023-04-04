@@ -194,4 +194,39 @@ mod tests {
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
+
+    #[test]
+    fn test_scaled_peak_planner_buffer() {
+        let ([chan1, _chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
+
+        let plan = ScaledResonatorPlanner::new()
+            .with_max_num_peaks(20)
+            .with_min_freq(0.0)
+            .with_min_prominence(1.0)
+            .plan(&chan1[..], sample_rate as f64);
+
+        let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
+
+        let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
+        let mut out_chan1 = vec![0_f64; chan1.len()];
+        let mut out_chan2 = out_chan1.clone();
+
+        let start = std::time::Instant::now();
+        let step_size = chan1.len() / 2;
+        for i in 0..1 {
+            array.process_buf(&chan1[i * step_size..(i + 1) * step_size], &mut out_chan1[i * step_size..(i + 1) * step_size]);
+        }
+        array.process_buf(&chan1[1 * step_size..], &mut out_chan1[1 * step_size..]);
+        println!("Took {}s to process signal", start.elapsed().as_secs_f64());
+        array.reset_state();
+        for i in 0..1 {
+            array.process_buf(&chan2[i * step_size..(i + 1) * step_size], &mut out_chan2[i * step_size..(i + 1) * step_size]);
+        }
+        array.process_buf(&chan2[1 * step_size..], &mut out_chan2[1 * step_size..]);
+        //array.process_buf(&chan2[..], &mut out_chan2[..]);
+
+        write_wave([out_chan1, out_chan2], "./tests/test_fm_resonator.wav", 48_000).unwrap();
+        create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
 }
