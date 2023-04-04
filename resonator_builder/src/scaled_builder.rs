@@ -29,6 +29,13 @@ impl ScaledResonatorPlan {
     pub fn iter(&self) -> std::slice::Iter<(f64, f64)> {
         self.resonators.iter()
     }
+
+    #[inline]
+    pub fn empty() -> Self {
+        Self {
+            resonators: vec![],
+        }
+    }
 }
 
 impl IntoIterator for ScaledResonatorPlan {
