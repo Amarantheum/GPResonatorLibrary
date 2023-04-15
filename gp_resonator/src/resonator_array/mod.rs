@@ -24,6 +24,10 @@ impl Default for ConjPoleResonatorState {
     }
 }
 
+pub struct ConjPoleResonatorUpdate {
+
+}
+
 /// A resonator composed of a dynamic number of [`ConjPoleResonator`]s.
 /// See [`ConjPoleResonatorArray::process_buf`].
 #[derive(Debug, Clone)]
@@ -46,6 +50,12 @@ impl ConjPoleResonatorArray {
             sample_rate,
             resonators: Vec::with_capacity(capacity),
         }
+    }
+
+    /// Returns the number of resonators in the [`ConjPoleResonatorArray`]
+    #[inline]
+    pub fn size(&self) -> usize {
+        self.resonators.len()
     }
 
     /// Processes a single data point given the required values from the difference equation
@@ -80,7 +90,7 @@ impl ConjPoleResonatorArray {
             workspace[1] = state.y_1;
             workspace[2] = res.process_single(state.x_1, state.y_1, state.y_2);
             buf[0] += workspace[2];
-            for i in 3..buf.len() + 1 {
+            for i in 3..buf.len() + 2 {
                 workspace[i] = res.process_single(x[i - 1 - 2], workspace[i - 1], workspace[i - 2]);
                 buf[i - 2] += workspace[i];
             }
@@ -118,20 +128,51 @@ impl ConjPoleResonatorArray {
     /// * `gain` - the gain of the resonator output (amplitude)
     #[inline]
     pub fn add_resonator_theta(&mut self, arg: f64, decay: f64, gain: f64) -> Result<(), &'static str> {
-        if arg > PI / 2.0 {
+        if arg > PI {
             return Err("frequency exceeds the nyquist limit")
         }
         if arg < 0.0 {
             return Err("frequency must be positive")
         }
-        let decay_samples = decay * self.sample_rate;
-        let r = 0.1_f64.powf(1.0 / decay_samples);
+        let r = Self::decay_to_mag(self.sample_rate, decay);
         // normalize gain
         let gain = gain * r * arg.sin();
         self.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(r, arg, gain)));
         Ok(())
     }
 
+    // calculate the correct magnitude for a pole to get the desired decay
+    #[inline]
+    fn decay_to_mag(sr: f64, decay: f64) -> f64 {
+        let decay_samples = decay * sr;
+        0.1_f64.powf(1.0 / decay_samples)
+    }
+
+    /// Updates each resonator in the array by passing each resonator into the given function
+    /// # Arguments
+    /// * `f` - A function the operates on each [`ConjPoleResonator`] in the [`ConjPoleResonatorArray`]
+    #[inline]
+    pub fn update_resonators<F: FnMut(usize, &mut ConjPoleResonator)>(&mut self, mut f: F) {
+        for (i, (_, resonator)) in self.resonators.iter_mut().enumerate() {
+            f(i, resonator)
+        }
+    }
+
+    /// Sets the decay amount for each resonator in the array to the given value.
+    /// # Arguments
+    /// * `decay` - The decay amount to set each resonator to
+    #[inline]
+    pub fn set_resonator_decays(&mut self, decay: f64) {
+        let sr = self.sample_rate;
+        for (_, resonator) in self.resonators.iter_mut() {
+            resonator.set_mag(Self::decay_to_mag(sr, decay))
+        }
+    }
+    
+    /// Add a pre-built resonator to the current resonator array.
+    /// User must ensure that the resonator frequency is what they expect since adding resonators using this method doesn't factor in sample rate.
+    /// # Arrguments
+    /// * `resonator` - The resonator to be added to the resonator array
     pub fn add_resonator_raw(&mut self, resonator: ConjPoleResonator) {
         self.resonators.push((ConjPoleResonatorState::default(), resonator))
     }
@@ -191,6 +232,50 @@ mod tests {
         write_wave([out_chan1, out_chan2], "audio/test_harmonic_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_harmonic_resonator_sections() {
+        let mut array = ConjPoleResonatorArray::new(48_000.0, 1);
+        for i in 1..54 * 8 + 1 {
+            array.add_resonator(55.0 * i as f64, 0.1, 1.0).unwrap();
+        }
+        let ([chan1, chan2], _) = read_wave("audio/test_noise.wav").unwrap();
+        let mut out_chan1 = vec![0_f64; chan1.len()];
+        let mut out_chan2 = out_chan1.clone();
+
+        let start = Instant::now();
+        let middle = chan1.len() / 2;
+        array.process_buf(&chan1[..middle], &mut out_chan1[..middle]);
+        array.process_buf(&chan1[middle..], &mut out_chan1[middle..]);
+        println!("Took {}s to process signal", start.elapsed().as_secs_f64());
+        array.reset_state();
+        array.process_buf(&chan2[..], &mut out_chan2[..]);
+
+        write_wave([out_chan1, out_chan2], "audio/test_harmonic_resonator.wav", 48_000).unwrap();
+        create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_harmonic_resonator_basic() {
+        let mut array = ConjPoleResonatorArray::new(48_000.0, 1);
+        for i in 1..2 {
+            array.add_resonator(55.0 * i as f64, 0.1, 1.0).unwrap();
+        }
+
+        let input = vec![0.0, 1.0, 0.0, -0.5, -0.7, 1.0, 0.0, 0.5, 0.0, 1.0, 0.0, -0.5, -0.7, 1.0, 0.0, 0.5];
+        let mut out1 = vec![0.0; input.len()];
+        array.process_buf(&input[..], &mut out1[..]);
+
+        array.reset_state();
+        let mut out2 = vec![0.0; input.len()];
+        array.process_buf(&input[..4], &mut out2[..4]);
+        array.process_buf(&input[4..8], &mut out2[4..8]);
+        array.process_buf(&input[8..12], &mut out2[8..12]);
+        array.process_buf(&input[12..], &mut out2[12..]);
+        
+        assert!(out1 == out2);
     }
 
     #[test]

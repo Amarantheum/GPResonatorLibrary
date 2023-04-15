@@ -60,47 +60,54 @@ pub struct ScaledResonatorPlanner {
 }
 
 impl ScaledResonatorPlanner {
-    /// Initialize a new resonator planner. Initializes all value to None.
+    /// Initialize a new empty resonator planner. Initializes all values to None.
     #[inline]
     pub fn new() -> Self {
         Default::default()
     }
 
+    /// Set the prominence threshold for peaks
     #[inline]
     pub fn with_min_prominence(mut self, v: f64) -> Self {
         self.min_prominence = Some(v);
         self
     }
 
+    /// Set the minimum height for peaks
     #[inline]
     pub fn with_min_threshold(mut self, v: f64) -> Self {
         self.min_threshold = Some(v);
         self
     }
 
+    /// Set the maximum number of peaks
     #[inline]
     pub fn with_max_num_peaks(mut self, v: usize) -> Self {
         self.max_num_peaks = Some(v);
         self
     }
 
+    /// Set the lower bound for frequency when searching for peaks
     #[inline]
     pub fn with_min_freq(mut self, v: f64) -> Self {
         self.min_freq = Some(v);
         self
     }
 
+    /// Set the upper bound for frequency when searching for peaks
     #[inline]
     pub fn with_max_freq(mut self, v: f64) -> Self {
         self.max_freq = Some(v);
         self
     }
 
+    // Get the angle corresponding to a bin index
     fn slice_index_to_theta(log_spec_index: usize, min_bin: usize, spec_size: usize) -> f64 {
         (log_spec_index + min_bin) as f64 / spec_size as f64 * PI * 2.0
     }
 
-    pub fn plan(&self, audio: &[f64], sample_rate: f64) -> ScaledResonatorPlan {
+    /// Perform the calculations with the planner to create a [`ScaledResonatorPlan`].
+    pub fn plan(&self, audio: &[f64]) -> ScaledResonatorPlan {
         if audio.len() < 3 {
             return ScaledResonatorPlan {
                 resonators: vec![],
@@ -176,7 +183,7 @@ mod tests {
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
-            .plan(&chan1[..], sample_rate as f64);
+            .plan(&chan1[..]);
 
         let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
 
@@ -203,7 +210,7 @@ mod tests {
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
-            .plan(&chan1[..], sample_rate as f64);
+            .plan(&chan1[..]);
 
         let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
 

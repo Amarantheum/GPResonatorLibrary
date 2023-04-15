@@ -9,7 +9,7 @@ use statrs::statistics::Statistics;
 use find_peaks::{PeakFinder, Peak};
 
 mod resonance_estimator;
-pub mod simple_builder;
+mod simple_builder;
 pub mod fft;
 pub mod scaled_builder;
 

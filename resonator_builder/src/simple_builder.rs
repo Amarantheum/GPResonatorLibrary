@@ -64,7 +64,7 @@ pub fn scaled_audio_to_resonator_array(audio: &[f64], sample_rate: f64, max_num_
     let mut resonator_array = ConjPoleResonatorArray::new(48_000_f64, peaks.len());
     for peak in peaks {
         let bin = peak.middle_position();
-        resonator_array.add_resonator(slice_index_to_freq(bin, min_bin, spec_size, sample_rate), 1.0, spec_slice[bin] / spec_max)?;
+        resonator_array.add_resonator(slice_index_to_freq(bin, min_bin, spec_size, sample_rate), 0.5, spec_slice[bin] / spec_max)?;
     }
 
     Ok(resonator_array)
@@ -134,6 +134,25 @@ mod tests {
         array.process_buf(&chan2[..], &mut out_chan2[..]);
 
         write_wave([out_chan1, out_chan2], "./tests/test_reverb_resonator.wav", 48_000).unwrap();
+        create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT * 2, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_bell_voice() {
+        let ([chan1, chan2], sample_rate) = read_wave("./tests/bell.wav").unwrap();
+        let mut array = scaled_audio_to_resonator_array(&chan1[..], sample_rate as f64, 100, 0.0, sample_rate as f64 / 2.0).unwrap();
+        let ([chan1, chan2], _) = read_wave("./tests/poem1b.wav").unwrap();
+        let mut out_chan1 = vec![0_f64; chan1.len()];
+        let mut out_chan2 = out_chan1.clone();
+
+        let start = std::time::Instant::now();
+        array.process_buf(&chan1[..], &mut out_chan1[..]);
+        println!("Took {}s to process signal", start.elapsed().as_secs_f64());
+        array.reset_state();
+        array.process_buf(&chan2[..], &mut out_chan2[..]);
+
+        write_wave([out_chan1, out_chan2], "./tests/test_bell_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
