@@ -1,8 +1,11 @@
+//! Implementation of the [`ScaledResonatorPlanner`] used for building resonators.
+//! This method builds a resonator array by setting a uniform decay rate for all resonators and scaling each resonator's gain to match the amplitude of the corresponding peak in the spectrum.
 use std::{f64::consts::PI};
 use crate::fft::{FftCalculator, window::{Rectangular, WindowFunction}};
 use find_peaks::{PeakFinder};
 use gp_resonator::resonator_array::ConjPoleResonatorArray;
 
+/// A type representing a plan for building a resonator array using the scaled method.
 #[derive(Debug, Clone)]
 pub struct ScaledResonatorPlan {
     /// Each value corresponds to (theta, gain) for a resonator
@@ -10,6 +13,7 @@ pub struct ScaledResonatorPlan {
 }
 
 impl ScaledResonatorPlan {
+    /// Initialize an empty resonator plan with given capacity.
     #[inline]
     pub fn with_capacity(size: usize) -> Self {
         Self {
@@ -17,6 +21,7 @@ impl ScaledResonatorPlan {
         }
     }
 
+    /// Build a resonator array from this plan.
     #[inline]
     pub fn build_resonator_array(&self, sample_rate: f64) -> Result<ConjPoleResonatorArray, &'static str> {
         let mut res_array = ConjPoleResonatorArray::new(sample_rate, self.resonators.len());
@@ -26,10 +31,12 @@ impl ScaledResonatorPlan {
         Ok(res_array)
     }
 
+    /// Obtain an iterator over the resonators in this plan.
     pub fn iter(&self) -> std::slice::Iter<(f64, f64)> {
         self.resonators.iter()
     }
 
+    /// Initialize an empty resonator plan.
     #[inline]
     pub fn empty() -> Self {
         Self {
@@ -47,11 +54,15 @@ impl IntoIterator for ScaledResonatorPlan {
     }
 }
 
-
+/// A type used to plan the creation of a resonator array using the scaled method.
+/// Uses a builder pattern to set the parameters for the planner.
 #[derive(Default, Clone, Copy, Debug)]
 pub struct ScaledResonatorPlanner {
+    /// value that filters peaks based on topographic prominence
     min_prominence: Option<f64>,
+    /// value that filters peaks based on height
     min_threshold: Option<f64>,
+    /// the number of peaks to find
     max_num_peaks: Option<usize>,
     /// value from 0.0 to 1.0 where 1.0 corresponds to sample rate
     min_freq: Option<f64>,

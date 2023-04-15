@@ -1,3 +1,5 @@
+//! This library contains functions for building a resonator array from audio data.
+//! [`scaled_builder::ScaledResonatorPlanner`] can be found in the scaled_builder module.
 use bode_plot::{create_plot, DEFAULT_HEIGHT, DEFAULT_WIDTH, plot::BodePlotTransferFunction};
 use fft::FftCalculator;
 use gp_resonator::{resonator_array::ConjPoleResonatorArray, resonator::ConjPoleResonator};
