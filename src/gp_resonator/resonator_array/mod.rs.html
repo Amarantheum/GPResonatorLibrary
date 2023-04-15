@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src\resonator_array\mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-52c5db6f6f352e54.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-3367e395607fafc1.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../gp_resonator/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `C:\Users\Amarantheum\projects\GPResonatorLibrary\gp_resonator\src\resonator_array\mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-52c5db6f6f352e54.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-3367e395607fafc1.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../gp_resonator/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -171,6 +171,121 @@
 <a href="#171" id="171">171</a>
 <a href="#172" id="172">172</a>
 <a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains implementations for resonator arrays.
 </span><span class="kw">use </span>std::f64::consts::PI;
 
@@ -197,6 +312,10 @@
     }
 }
 
+<span class="kw">pub struct </span>ConjPoleResonatorUpdate {
+
+}
+
 <span class="doccomment">/// A resonator composed of a dynamic number of [`ConjPoleResonator`]s.
 /// See [`ConjPoleResonatorArray::process_buf`].
 </span><span class="attr">#[derive(Debug, Clone)]
@@ -219,6 +338,12 @@
             sample_rate,
             resonators: Vec::with_capacity(capacity),
         }
+    }
+
+    <span class="doccomment">/// Returns the number of resonators in the [`ConjPoleResonatorArray`]
+    </span><span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.resonators.len()
     }
 
     <span class="doccomment">/// Processes a single data point given the required values from the difference equation
@@ -253,7 +378,7 @@
             workspace[<span class="number">1</span>] = state.y_1;
             workspace[<span class="number">2</span>] = res.process_single(state.x_1, state.y_1, state.y_2);
             buf[<span class="number">0</span>] += workspace[<span class="number">2</span>];
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">3</span>..buf.len() + <span class="number">1 </span>{
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">3</span>..buf.len() + <span class="number">2 </span>{
                 workspace[i] = res.process_single(x[i - <span class="number">1 </span>- <span class="number">2</span>], workspace[i - <span class="number">1</span>], workspace[i - <span class="number">2</span>]);
                 buf[i - <span class="number">2</span>] += workspace[i];
             }
@@ -276,15 +401,68 @@
     <span class="doccomment">/// Add a resonator with given intensity and gain to the array.
     /// # Arguments
     /// * `freq` - the frequency of the resonator in Hz
-    /// * `intensity` - the modulus of the pole in the complex plane (must be in range [0, 1) for stable system)
+    /// * `decay` - the time in seconds for the signal to reach 10% amplitude
     /// * `gain` - the gain of the resonator output (amplitude)
-    </span><span class="kw">pub fn </span>add_resonator(<span class="kw-2">&amp;mut </span><span class="self">self</span>, freq: f64, intensity: f64, gain: f64) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
-        <span class="kw">if </span>freq &gt; <span class="self">self</span>.sample_rate / <span class="number">2.0 </span>{
+    </span><span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>add_resonator(<span class="kw-2">&amp;mut </span><span class="self">self</span>, freq: f64, decay: f64, gain: f64) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
+        <span class="kw">let </span>arg = <span class="number">2.0 </span>* PI * freq / <span class="self">self</span>.sample_rate;
+        <span class="self">self</span>.add_resonator_theta(arg, decay, gain)
+    }
+
+    <span class="doccomment">/// Add a resonator with given intensity and gain to the array.
+    /// # Arguments
+    /// * `theta` - the frequency of the resonator in radians
+    /// * `decay` - the time in seconds for the signal to reach 10% amplitude
+    /// * `gain` - the gain of the resonator output (amplitude)
+    </span><span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>add_resonator_theta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, arg: f64, decay: f64, gain: f64) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
+        <span class="kw">if </span>arg &gt; PI {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;frequency exceeds the nyquist limit&quot;</span>)
         }
-        <span class="kw">let </span>arg = <span class="number">2.0 </span>* PI * freq / <span class="self">self</span>.sample_rate;
-        <span class="self">self</span>.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(intensity, arg, gain)));
+        <span class="kw">if </span>arg &lt; <span class="number">0.0 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;frequency must be positive&quot;</span>)
+        }
+        <span class="kw">let </span>r = <span class="self">Self</span>::decay_to_mag(<span class="self">self</span>.sample_rate, decay);
+        <span class="comment">// normalize gain
+        </span><span class="kw">let </span>gain = gain * r * arg.sin();
+        <span class="self">self</span>.resonators.push((ConjPoleResonatorState::default(), ConjPoleResonator::new_polar(r, arg, gain)));
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="comment">// calculate the correct magnitude for a pole to get the desired decay
+    </span><span class="attr">#[inline]
+    </span><span class="kw">fn </span>decay_to_mag(sr: f64, decay: f64) -&gt; f64 {
+        <span class="kw">let </span>decay_samples = decay * sr;
+        <span class="number">0.1_f64</span>.powf(<span class="number">1.0 </span>/ decay_samples)
+    }
+
+    <span class="doccomment">/// Updates each resonator in the array by passing each resonator into the given function
+    /// # Arguments
+    /// * `f` - A function the operates on each [`ConjPoleResonator`] in the [`ConjPoleResonatorArray`]
+    </span><span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>update_resonators&lt;F: FnMut(usize, <span class="kw-2">&amp;mut </span>ConjPoleResonator)&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>f: F) {
+        <span class="kw">for </span>(i, (<span class="kw">_</span>, resonator)) <span class="kw">in </span><span class="self">self</span>.resonators.iter_mut().enumerate() {
+            f(i, resonator)
+        }
+    }
+
+    <span class="doccomment">/// Sets the decay amount for each resonator in the array to the given value.
+    /// # Arguments
+    /// * `decay` - The decay amount to set each resonator to
+    </span><span class="attr">#[inline]
+    </span><span class="kw">pub fn </span>set_resonator_decays(<span class="kw-2">&amp;mut </span><span class="self">self</span>, decay: f64) {
+        <span class="kw">let </span>sr = <span class="self">self</span>.sample_rate;
+        <span class="kw">for </span>(<span class="kw">_</span>, resonator) <span class="kw">in </span><span class="self">self</span>.resonators.iter_mut() {
+            resonator.set_mag(<span class="self">Self</span>::decay_to_mag(sr, decay))
+        }
+    }
+    
+    <span class="doccomment">/// Add a pre-built resonator to the current resonator array.
+    /// User must ensure that the resonator frequency is what they expect since adding resonators using this method doesn&#39;t factor in sample rate.
+    /// # Arrguments
+    /// * `resonator` - The resonator to be added to the resonator array
+    </span><span class="kw">pub fn </span>add_resonator_raw(<span class="kw-2">&amp;mut </span><span class="self">self</span>, resonator: ConjPoleResonator) {
+        <span class="self">self</span>.resonators.push((ConjPoleResonatorState::default(), resonator))
     }
 }
 
@@ -303,16 +481,16 @@
     <span class="kw">use </span>std::time::Instant;
 
     <span class="kw">use </span>bode_plot::{create_plot, DEFAULT_WIDTH, DEFAULT_HEIGHT};
+    <span class="kw">use </span>wav_util::<span class="kw-2">*</span>;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::wav_util::<span class="kw-2">*</span>;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_add_resonator() {
         <span class="kw">let </span><span class="kw-2">mut </span>array = ConjPoleResonatorArray::new(<span class="number">48_000.0</span>, <span class="number">1</span>);
-        array.add_resonator(<span class="number">440.0</span>, <span class="number">0.9999</span>, <span class="number">1.0</span>);
+        array.add_resonator(<span class="number">440.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>).unwrap();
 
-        <span class="kw">let </span>[chan1, chan2] = read_wave(<span class="string">&quot;audio/test_noise.wav&quot;</span>).unwrap();
+        <span class="kw">let </span>([chan1, chan2], <span class="kw">_</span>) = read_wave(<span class="string">&quot;audio/test_noise.wav&quot;</span>).unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>out_chan1 = <span class="macro">vec!</span>[<span class="number">0_f64</span>; chan1.len()];
         <span class="kw">let </span><span class="kw-2">mut </span>out_chan2 = out_chan1.clone();
 
@@ -327,9 +505,9 @@
     </span><span class="kw">fn </span>test_harmonic_resonator() {
         <span class="kw">let </span><span class="kw-2">mut </span>array = ConjPoleResonatorArray::new(<span class="number">48_000.0</span>, <span class="number">1</span>);
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">54 </span>* <span class="number">8 </span>+ <span class="number">1 </span>{
-            array.add_resonator(<span class="number">55.0 </span>* i <span class="kw">as </span>f64, <span class="number">0.9999</span>, <span class="number">1.0</span>).unwrap();
+            array.add_resonator(<span class="number">55.0 </span>* i <span class="kw">as </span>f64, <span class="number">0.1</span>, <span class="number">1.0</span>).unwrap();
         }
-        <span class="kw">let </span>[chan1, chan2] = read_wave(<span class="string">&quot;audio/test_noise.wav&quot;</span>).unwrap();
+        <span class="kw">let </span>([chan1, chan2], <span class="kw">_</span>) = read_wave(<span class="string">&quot;audio/test_noise.wav&quot;</span>).unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>out_chan1 = <span class="macro">vec!</span>[<span class="number">0_f64</span>; chan1.len()];
         <span class="kw">let </span><span class="kw-2">mut </span>out_chan2 = out_chan1.clone();
 
@@ -342,6 +520,58 @@
         write_wave([out_chan1, out_chan2], <span class="string">&quot;audio/test_harmonic_resonator.wav&quot;</span>, <span class="number">48_000</span>).unwrap();
         create_plot(<span class="string">&quot;Harmonincs&quot;</span>.into(), DEFAULT_WIDTH * <span class="number">2</span>, DEFAULT_HEIGHT, <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>array <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(<span class="number">5</span>));
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_harmonic_resonator_sections() {
+        <span class="kw">let </span><span class="kw-2">mut </span>array = ConjPoleResonatorArray::new(<span class="number">48_000.0</span>, <span class="number">1</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">54 </span>* <span class="number">8 </span>+ <span class="number">1 </span>{
+            array.add_resonator(<span class="number">55.0 </span>* i <span class="kw">as </span>f64, <span class="number">0.1</span>, <span class="number">1.0</span>).unwrap();
+        }
+        <span class="kw">let </span>([chan1, chan2], <span class="kw">_</span>) = read_wave(<span class="string">&quot;audio/test_noise.wav&quot;</span>).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>out_chan1 = <span class="macro">vec!</span>[<span class="number">0_f64</span>; chan1.len()];
+        <span class="kw">let </span><span class="kw-2">mut </span>out_chan2 = out_chan1.clone();
+
+        <span class="kw">let </span>start = Instant::now();
+        <span class="kw">let </span>middle = chan1.len() / <span class="number">2</span>;
+        array.process_buf(<span class="kw-2">&amp;</span>chan1[..middle], <span class="kw-2">&amp;mut </span>out_chan1[..middle]);
+        array.process_buf(<span class="kw-2">&amp;</span>chan1[middle..], <span class="kw-2">&amp;mut </span>out_chan1[middle..]);
+        <span class="macro">println!</span>(<span class="string">&quot;Took {}s to process signal&quot;</span>, start.elapsed().as_secs_f64());
+        array.reset_state();
+        array.process_buf(<span class="kw-2">&amp;</span>chan2[..], <span class="kw-2">&amp;mut </span>out_chan2[..]);
+
+        write_wave([out_chan1, out_chan2], <span class="string">&quot;audio/test_harmonic_resonator.wav&quot;</span>, <span class="number">48_000</span>).unwrap();
+        create_plot(<span class="string">&quot;Harmonincs&quot;</span>.into(), DEFAULT_WIDTH * <span class="number">2</span>, DEFAULT_HEIGHT, <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>array <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>BodePlotTransferFunction]).unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(<span class="number">5</span>));
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_harmonic_resonator_basic() {
+        <span class="kw">let </span><span class="kw-2">mut </span>array = ConjPoleResonatorArray::new(<span class="number">48_000.0</span>, <span class="number">1</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">2 </span>{
+            array.add_resonator(<span class="number">55.0 </span>* i <span class="kw">as </span>f64, <span class="number">0.1</span>, <span class="number">1.0</span>).unwrap();
+        }
+
+        <span class="kw">let </span>input = <span class="macro">vec!</span>[<span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, -<span class="number">0.5</span>, -<span class="number">0.7</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.5</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, -<span class="number">0.5</span>, -<span class="number">0.7</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.5</span>];
+        <span class="kw">let </span><span class="kw-2">mut </span>out1 = <span class="macro">vec!</span>[<span class="number">0.0</span>; input.len()];
+        array.process_buf(<span class="kw-2">&amp;</span>input[..], <span class="kw-2">&amp;mut </span>out1[..]);
+
+        array.reset_state();
+        <span class="kw">let </span><span class="kw-2">mut </span>out2 = <span class="macro">vec!</span>[<span class="number">0.0</span>; input.len()];
+        array.process_buf(<span class="kw-2">&amp;</span>input[..<span class="number">4</span>], <span class="kw-2">&amp;mut </span>out2[..<span class="number">4</span>]);
+        array.process_buf(<span class="kw-2">&amp;</span>input[<span class="number">4</span>..<span class="number">8</span>], <span class="kw-2">&amp;mut </span>out2[<span class="number">4</span>..<span class="number">8</span>]);
+        array.process_buf(<span class="kw-2">&amp;</span>input[<span class="number">8</span>..<span class="number">12</span>], <span class="kw-2">&amp;mut </span>out2[<span class="number">8</span>..<span class="number">12</span>]);
+        array.process_buf(<span class="kw-2">&amp;</span>input[<span class="number">12</span>..], <span class="kw-2">&amp;mut </span>out2[<span class="number">12</span>..]);
+        
+        <span class="macro">assert!</span>(out1 == out2);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_decay_math() {
+        <span class="comment">// decay = 10 samples
+        </span><span class="kw">let </span>decay = <span class="number">1_f64 </span>* <span class="number">48_000_f64</span>;
+        <span class="kw">let </span>r = <span class="number">0.00001_f64</span>.powf(<span class="number">1.0 </span>/ decay);
+        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, r);
     }
 }</code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="gp_resonator" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (5ce39f42b 2023-01-20)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-ab1d4ae2ec52020e.css" ></div></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["combine_channels",""],["read_wave","Read a 2 channel wav file into an array of vectors"],["scale_audio","Normalizes the signal if the maximum amplitude is greater than 1.0 (uses the absolute value of the amplitude)"],["write_wave","Given a set of two vectors representing audio channels to a wav file"]]};

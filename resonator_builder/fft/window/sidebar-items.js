@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["null_window_fn",""]],"struct":[["BlackmanHarris",""],["Rectangular",""]],"trait":[["WindowFunction",""]],"type":[["RealWindowFn",""]]};

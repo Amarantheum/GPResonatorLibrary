@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["bode_plot","gp_resonator","num_complex"];
+window.ALL_CRATES = ["bode_plot","gp_resonator","num_complex","resonator_builder","wav_util"];
