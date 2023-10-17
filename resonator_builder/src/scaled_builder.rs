@@ -4,9 +4,10 @@ use std::{f64::consts::PI};
 use crate::fft::{FftCalculator, window::{Rectangular, WindowFunction}};
 use find_peaks::{PeakFinder};
 use gp_resonator::resonator_array::ConjPoleResonatorArray;
+use serde::{Serialize, Deserialize};
 
 /// A type representing a plan for building a resonator array using the scaled method.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScaledResonatorPlan {
     /// Each value corresponds to (theta, gain) for a resonator
     pub resonators: Vec<(f64, f64)>,
@@ -42,6 +43,11 @@ impl ScaledResonatorPlan {
         Self {
             resonators: vec![],
         }
+    }
+
+    #[inline]
+    pub fn sort(&mut self) {
+        self.resonators.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
     }
 }
 
@@ -182,6 +188,7 @@ impl ScaledResonatorPlanner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::random;
     use wav_util::*;
     use bode_plot::*;
     use bode_plot::plot::BodePlotTransferFunction;
@@ -246,5 +253,41 @@ mod tests {
         write_wave([out_chan1, out_chan2], "./tests/test_fm_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_noise() {
+        let num_iter = 1000;
+        let len = 64 * num_iter;
+        let plan = ScaledResonatorPlan {
+            resonators: vec![(PI / 512.0, 0.999)],
+        };
+
+        let mut array = plan.build_resonator_array(48_000.0).unwrap();
+        let mut noise: Vec<f64> = Vec::with_capacity(len);
+        for _ in 0..len {
+            noise.push(random::<f64>() * 2.0 - 1.0);
+        }
+
+        let mut out: Vec<f64> = vec![0.0; len];
+        
+        for i in 0..num_iter {
+            array.process_buf(&noise[i * 64..(i + 1) * 64], &mut out[i * 64..(i + 1) * 64]);
+        }
+
+        let in_path = noise.iter().enumerate().map(|(i, v)| (i as f64, *v)).collect::<Vec<(f64, f64)>>();
+        let out_path = out.iter().enumerate().map(|(i, v)| (i as f64, *v)).collect::<Vec<(f64, f64)>>();
+        create_generic_plot("Noise Input".into(), 1920, 1080, in_path, 0.0..(len as f64), -1.0..1.0).unwrap();
+        create_generic_plot("Noise Output".into(), 1920, 1080, out_path, 0.0..(len as f64), -100.0..100.0).unwrap();
+        loop{}
+    }
+
+    #[test]
+    fn test_sort() {
+        let mut plan = ScaledResonatorPlan {
+            resonators: vec![(0.0, 0.0), (0.5, 0.0), (0.25, 0.0)],
+        };
+        plan.sort();
+        assert_eq!(plan.resonators, vec![(0.0, 0.0), (0.25, 0.0), (0.5, 0.0)]);
     }
 }

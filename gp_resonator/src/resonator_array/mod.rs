@@ -24,10 +24,6 @@ impl Default for ConjPoleResonatorState {
     }
 }
 
-pub struct ConjPoleResonatorUpdate {
-
-}
-
 /// A resonator composed of a dynamic number of [`ConjPoleResonator`]s.
 /// See [`ConjPoleResonatorArray::process_buf`].
 #[derive(Debug, Clone)]
