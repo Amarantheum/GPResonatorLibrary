@@ -142,4 +142,18 @@ mod tests {
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
     }
+
+    #[test]
+    fn test_impulse_response() {
+        let resonator = ConjPoleResonator::new_polar(0.99, PI / 32.0, (PI / 32.0).sin() * 0.99);
+        let mut input = vec![0_f64; 1000];
+        input[0] = 1_f64;
+        input[1] = -1_f64;
+        let mut out = vec![0_f64; input.len()];
+        out[1] = resonator.process_single(input[0], out[0], 0.0);
+        for i in 2..input.len() {
+            out[i] = resonator.process_single(input[i-1], out[i-1], out[i-2]);
+        }
+        println!("{:?}", out);
+    }
 }
