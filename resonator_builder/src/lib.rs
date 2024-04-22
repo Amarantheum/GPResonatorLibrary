@@ -12,6 +12,8 @@ use find_peaks::{PeakFinder, Peak};
 
 mod resonance_estimator;
 mod simple_builder;
+mod gradient_descent_builder;
+mod expectation_maximization;
 pub mod fft;
 pub mod scaled_builder;
 
