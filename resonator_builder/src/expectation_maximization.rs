@@ -41,15 +41,19 @@ impl GaussianEstimator {
 
     fn compute_responsibilities(&self, gaussians: &[Gaussian]) -> Vec<Vec<f64>> {
         let mut responsibilities = Vec::with_capacity(gaussians.len());
-        for gaussian in gaussians {
+        let log_pdf_table = gaussians.iter().map(|g| self.x.iter().map(|x| g.log_pdf(*x)).collect::<Vec<f64>>()).collect::<Vec<Vec<f64>>>();
+        let mut max_log_x_table = Vec::with_capacity(self.x.len());
+        for i in 0..self.x.len() {
+            let max_log_x = log_pdf_table.iter().map(|v| v[i]).fold(f64::NEG_INFINITY, |acc, v| acc.max(v));
+            max_log_x_table.push(max_log_x);
+        }
+        for g in 0..gaussians.len() {
             let mut responsibility = Vec::with_capacity(self.x.len());
             for i in 0..self.x.len() {
-                let numerator = gaussian.pdf(self.x[i]);
-                let mut denominator = 0.0;
-                for g in gaussians {
-                    denominator += g.pdf(self.x[i]);
-                }
-                responsibility.push(numerator / denominator * self.y[i]);
+                let log_numerator = log_pdf_table[g][i];
+                let max_x = max_log_x_table[i];
+                let log_responsibility = log_numerator - max_x - (log_pdf_table.iter().map(|v| v[i] - max_x).fold(0.0, |acc, v| acc + v.exp())).ln();
+                responsibility.push(log_responsibility.exp() * self.y[i]);
             }
             responsibilities.push(responsibility);
         }
@@ -67,11 +71,12 @@ impl GaussianEstimator {
         let mut rng = rand::thread_rng();
         let mut gaussians = self.gaussians.clone();
 
-        for _ in 0..iterations {
+        for iteration in 0..iterations {
             let mut cloned = gaussians.clone();
             cloned.sort_by(|a, b| a.mean.partial_cmp(&b.mean).unwrap());
 
             let responsibilities = self.compute_responsibilities(&gaussians);
+            //println!("{:?}", responsibilities);
             let mut new_gaussians = Vec::with_capacity(self.gaussians.len());
             for i in 0..self.gaussians.len() {
                 let mut new_mean = 0.0;
@@ -88,6 +93,7 @@ impl GaussianEstimator {
                 new_gaussians.push(Gaussian::new(new_mean, new_variance, new_weight));
             }
             let (mean_max, variance_max) = Self::compute_l_infty(&cloned, &new_gaussians);
+            println!("Iteration: {}, Mean Max: {}, Variance Max: {}", iteration, mean_max, variance_max);
             if mean_max < 1e-6 && variance_max < 1e-6 {
                 break;
             }
@@ -116,6 +122,12 @@ impl Gaussian {
         let b = (x - self.mean).powi(2) / (2.0 * self.variance);
         self.weight * a * (-b).exp()
     }
+
+    pub fn log_pdf(&self, x: f64) -> f64 {
+        let a = 1.0 / (2.0 * std::f64::consts::PI * self.variance).sqrt();
+        let b = (x - self.mean).powi(2) / (2.0 * self.variance);
+        self.weight.ln() + a.ln() - b
+    }
 }
 
 #[cfg(test)]
@@ -123,14 +135,15 @@ mod em_tests {
     use super::*;
     use std::f64::consts::PI;
     use plotters::prelude::*;
+    use crate::resonance_params::ResonatorParams;
 
-    fn plot_x_y(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
+    fn plot_x_y(x: &Vec<f64>, y: &Vec<f64>, name: &str, graph_title: &str) {
         let y_max = y.iter().fold(0.0, |acc: f64, &v| acc.max(v));
 
         let root = BitMapBackend::new(name, (1920, 1080)).into_drawing_area();
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
-            .caption("Gaussian Estimation", ("sans-serif", 30).into_font())
+            .caption(graph_title, ("sans-serif", 30).into_font())
             .margin(5)
             .x_label_area_size(40)
             .y_label_area_size(40)
@@ -168,7 +181,7 @@ mod em_tests {
             x.push(x_);
             y.push(sum);
         }
-        plot_x_y(&x, &y, "gaussian_basic.png");
+        plot_x_y(&x, &y, "gaussian_basic.png", "Gaussian Basic");
 
         let estimator = GaussianEstimator::new(x, y, 10);
         let estimated_gaussians = estimator.estimate(100);
@@ -183,7 +196,7 @@ mod em_tests {
             x.push(x_);
             y.push(sum);
         }
-        plot_x_y(&x, &y, "gaussian_estimated_basic.png");
+        plot_x_y(&x, &y, "gaussian_estimated_basic.png", "Gaussian Estimated Basic");
     }
 
     #[test]
@@ -210,9 +223,9 @@ mod em_tests {
                 sum += gaussian.pdf(x_);
             }
             x.push(x_);
-            y.push(sum + rng.gen_range(-0.01..0.01));
+            y.push(sum + rng.gen_range(-5.0..5.0));
         }
-        plot_x_y(&x, &y, "gaussian.png");
+        plot_x_y(&x, &y, "gaussian.png", "Gaussian");
 
         let len = gaussians.len();
         let est_gaussians = gaussians.iter().map(|g| Gaussian::new(g.mean, 0.00001, 1.0 / len as f64)).collect::<Vec<_>>();
@@ -232,6 +245,110 @@ mod em_tests {
             x.push(x_);
             y.push(sum);
         }
-        plot_x_y(&x, &y, "gaussian_estimated.png");
+        plot_x_y(&x, &y, "gaussian_estimated.png", "Gaussian Estimated");
+    }
+
+    #[test]
+    fn test_gaussian_estimator_modes_basic() {
+        const X_SIZE: usize = 1024;
+
+        let mut resonance_params = Vec::new();
+        resonance_params.push(ResonatorParams::new(0.5, 1.0, 0.999));
+        resonance_params.push(ResonatorParams::new(1.0, 1.0, 0.999));
+        resonance_params.push(ResonatorParams::new(1.5, 1.0, 0.999));
+        resonance_params.push(ResonatorParams::new(2.0, 1.0, 0.999));
+        resonance_params.push(ResonatorParams::new(2.5, 1.0, 0.999));
+
+        let mut x = Vec::with_capacity(X_SIZE);
+        let mut y = Vec::with_capacity(X_SIZE);
+        for i in 0..X_SIZE {
+            let mut sum = 0.0;
+            let x_ = i as f64 / X_SIZE as f64 * PI;
+            for params in &resonance_params {
+                sum += params.get_mag_at(x_);
+            }
+            x.push(x_);
+            y.push(sum);
+        }
+        let min_y = y.iter().fold(f64::INFINITY, |acc, &v| acc.min(v));
+        for y in &mut y {
+            *y = (*y - min_y).max(0.0);
+        }
+
+        plot_x_y(&x, &y, "gaussian_modes_basic.png", "Original Frequency Response");
+
+        let len = resonance_params.len();
+        let est_gaussians = resonance_params.iter().map(|p| Gaussian::new(p.w_0, 0.0001, 1.0 / len as f64)).collect::<Vec<_>>();
+
+        let estimator = GaussianEstimator::new_with_initial(x, y, est_gaussians);
+        let estimated_gaussians = estimator.estimate(100);
+
+        let mut x = Vec::with_capacity(X_SIZE);
+        let mut y = Vec::with_capacity(X_SIZE);
+
+        for i in 0..X_SIZE {
+            let mut sum = 0.0;
+            let x_ = i as f64 / X_SIZE as f64 * PI;
+            for gaussian in &estimated_gaussians {
+                sum += gaussian.pdf(x_);
+            }
+            x.push(x_);
+            y.push(sum);
+        }
+
+        plot_x_y(&x, &y, "gaussian_estimated_modes_basic.png", "GMM Estimated Frequency Response");
+    }
+
+    #[test]
+    fn test_gaussian_estimator_modes() {
+        const TEST_SIZE: usize = 100;
+        const X_SIZE: usize = 2048;
+
+        let mut rng = rand::thread_rng();
+        let mut resonance_params = Vec::with_capacity(TEST_SIZE);
+        for _ in 0..TEST_SIZE {
+            let w_0 = rng.gen_range(0.0..PI);
+            let g = rng.gen_range(0.1..1.0);
+            let r = rng.gen_range(0.99..0.999);
+            resonance_params.push(ResonatorParams::new(w_0, g, r));
+        }
+
+        let mut x = Vec::with_capacity(X_SIZE);
+        let mut y = Vec::with_capacity(X_SIZE);
+        for i in 0..X_SIZE {
+            let mut sum = 0.0;
+            let x_ = i as f64 / X_SIZE as f64 * PI;
+            for params in &resonance_params {
+                sum += params.get_mag_at(x_);
+            }
+            x.push(x_);
+            y.push(sum); //+ rng.gen_range(-5.0..5.0));
+        }
+        let min_y = y.iter().fold(f64::INFINITY, |acc, &v| acc.min(v));
+        for y in &mut y {
+            *y = (*y - min_y).max(0.0);
+        }
+
+        plot_x_y(&x, &y, "gaussian_modes.png", "Original Frequency Response");
+
+        let len = resonance_params.len();
+        let est_gaussians = resonance_params.iter().map(|p| Gaussian::new(p.w_0, 0.00001, 1.0 / len as f64)).collect::<Vec<_>>();
+        let estimator = GaussianEstimator::new_with_initial(x, y, est_gaussians);
+        let estimated_gaussians = estimator.estimate(100);
+
+        let mut x = Vec::with_capacity(X_SIZE);
+        let mut y = Vec::with_capacity(X_SIZE);
+
+        for i in 0..X_SIZE {
+            let mut sum = 0.0;
+            let x_ = i as f64 / X_SIZE as f64 * PI;
+            for gaussian in &estimated_gaussians {
+                sum += gaussian.pdf(x_);
+            }
+            x.push(x_);
+            y.push(sum);
+        }
+
+        plot_x_y(&x, &y, "gaussian_estimated_modes.png", "GMM Estimated Frequency Response");
     }
 }

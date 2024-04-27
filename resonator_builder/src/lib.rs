@@ -14,6 +14,8 @@ mod resonance_estimator;
 mod simple_builder;
 mod gradient_descent_builder;
 mod expectation_maximization;
+mod resonance_params;
+mod approx_gradient_descent_builder;
 pub mod fft;
 pub mod scaled_builder;
 
