@@ -5,64 +5,13 @@ use crate::fft::{FftCalculator, window::{Rectangular, WindowFunction}};
 use find_peaks::{PeakFinder};
 use gp_resonator::resonator_array::ConjPoleResonatorArray;
 use serde::{Serialize, Deserialize};
+use crate::{ResonatorPlan, ResonatorArrayPlan};
 
-/// A type representing a plan for building a resonator array using the scaled method.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScaledResonatorPlan {
-    /// Each value corresponds to (theta, gain) for a resonator
-    pub resonators: Vec<(f64, f64)>,
-}
 
-impl ScaledResonatorPlan {
-    /// Initialize an empty resonator plan with given capacity.
-    #[inline]
-    pub fn with_capacity(size: usize) -> Self {
-        Self {
-            resonators: Vec::with_capacity(size),
-        }
-    }
-
-    /// Build a resonator array from this plan.
-    #[inline]
-    pub fn build_resonator_array(&self, sample_rate: f64) -> Result<ConjPoleResonatorArray, &'static str> {
-        let mut res_array = ConjPoleResonatorArray::new(sample_rate, self.resonators.len());
-        for peak in &self.resonators {
-            res_array.add_resonator_theta(peak.0, 1.0, peak.1)?;
-        }
-        Ok(res_array)
-    }
-
-    /// Obtain an iterator over the resonators in this plan.
-    pub fn iter(&self) -> std::slice::Iter<(f64, f64)> {
-        self.resonators.iter()
-    }
-
-    /// Initialize an empty resonator plan.
-    #[inline]
-    pub fn empty() -> Self {
-        Self {
-            resonators: vec![],
-        }
-    }
-
-    #[inline]
-    pub fn sort(&mut self) {
-        self.resonators.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-    }
-}
-
-impl IntoIterator for ScaledResonatorPlan {
-    type Item = (f64, f64);
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.resonators.into_iter()
-    }
-}
 
 /// A type used to plan the creation of a resonator array using the scaled method.
 /// Uses a builder pattern to set the parameters for the planner.
-#[derive(Default, Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct ScaledResonatorPlanner {
     /// value that filters peaks based on topographic prominence
     min_prominence: Option<f64>,
@@ -74,13 +23,22 @@ pub struct ScaledResonatorPlanner {
     min_freq: Option<f64>,
     /// value from 0.0 to 1.0 where 1.0 corresponds to sample rate
     max_freq: Option<f64>,
+    /// Sample rate of the audio
+    sample_rate: f64,
 }
 
 impl ScaledResonatorPlanner {
     /// Initialize a new empty resonator planner. Initializes all values to None.
     #[inline]
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new(sample_rate: f64) -> Self {
+        Self {
+            min_prominence: None,
+            min_threshold: None,
+            max_num_peaks: None,
+            min_freq: None,
+            max_freq: None,
+            sample_rate,
+        }
     }
 
     /// Set the prominence threshold for peaks
@@ -124,11 +82,9 @@ impl ScaledResonatorPlanner {
     }
 
     /// Perform the calculations with the planner to create a [`ScaledResonatorPlan`].
-    pub fn plan(&self, audio: &[f64]) -> ScaledResonatorPlan {
+    pub fn plan(&self, audio: &[f64]) -> ResonatorArrayPlan {
         if audio.len() < 3 {
-            return ScaledResonatorPlan {
-                resonators: vec![],
-            }
+            panic!("Audio length must be at least 3");
         }
         let near_pow_2 = ((audio.len() - 1).ilog2() + 1) as usize;
         let spec_size = 2_usize.pow(near_pow_2 as u32);
@@ -173,11 +129,14 @@ impl ScaledResonatorPlanner {
         // number of resonators in output array
         let n = peaks.len().min(self.max_num_peaks.unwrap_or(100));
         
-        let mut plan = ScaledResonatorPlan::with_capacity(n);
+        let mut plan = ResonatorArrayPlan::with_capacity(n, self.sample_rate);
 
         for i in 0..n {
             let bin = peaks[i].middle_position();
-            plan.resonators.push((Self::slice_index_to_theta(bin, min_bin, spec_size), spec_slice[bin] / spec_max));
+            let arg = Self::slice_index_to_theta(bin, min_bin, spec_size);
+            let gain = spec_slice[bin] / spec_max;
+            let resonator_plan = ResonatorPlan::new(0.9999, arg, gain);
+            plan.resonators.push(resonator_plan);
         }
 
         plan
@@ -197,13 +156,13 @@ mod tests {
     fn test_scaled_peak_planner() {
         let ([chan1, _chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
 
-        let plan = ScaledResonatorPlanner::new()
+        let plan = ScaledResonatorPlanner::new(48_000_f64)
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
             .plan(&chan1[..]);
 
-        let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
+        let mut array = plan.build_resonator_array().unwrap();
 
         let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
@@ -224,13 +183,13 @@ mod tests {
     fn test_scaled_peak_planner_buffer() {
         let ([chan1, _chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
 
-        let plan = ScaledResonatorPlanner::new()
+        let plan = ScaledResonatorPlanner::new(48_000_f64)
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
             .plan(&chan1[..]);
 
-        let mut array = plan.build_resonator_array(sample_rate as f64).unwrap();
+        let mut array = plan.build_resonator_array().unwrap();
 
         let ([chan1, chan2], _) = read_wave("./tests/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
@@ -253,41 +212,5 @@ mod tests {
         write_wave([out_chan1, out_chan2], "./tests/test_fm_resonator.wav", 48_000).unwrap();
         create_plot("Harmonincs".into(), DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, vec![&array as &dyn BodePlotTransferFunction]).unwrap();
         std::thread::sleep(std::time::Duration::from_secs(5));
-    }
-
-    #[test]
-    fn test_noise() {
-        let num_iter = 1000;
-        let len = 64 * num_iter;
-        let plan = ScaledResonatorPlan {
-            resonators: vec![(PI / 512.0, 0.999)],
-        };
-
-        let mut array = plan.build_resonator_array(48_000.0).unwrap();
-        let mut noise: Vec<f64> = Vec::with_capacity(len);
-        for _ in 0..len {
-            noise.push(random::<f64>() * 2.0 - 1.0);
-        }
-
-        let mut out: Vec<f64> = vec![0.0; len];
-        
-        for i in 0..num_iter {
-            array.process_buf(&noise[i * 64..(i + 1) * 64], &mut out[i * 64..(i + 1) * 64]);
-        }
-
-        let in_path = noise.iter().enumerate().map(|(i, v)| (i as f64, *v)).collect::<Vec<(f64, f64)>>();
-        let out_path = out.iter().enumerate().map(|(i, v)| (i as f64, *v)).collect::<Vec<(f64, f64)>>();
-        create_generic_plot("Noise Input".into(), 1920, 1080, in_path, 0.0..(len as f64), -1.0..1.0).unwrap();
-        create_generic_plot("Noise Output".into(), 1920, 1080, out_path, 0.0..(len as f64), -100.0..100.0).unwrap();
-        loop{}
-    }
-
-    #[test]
-    fn test_sort() {
-        let mut plan = ScaledResonatorPlan {
-            resonators: vec![(0.0, 0.0), (0.5, 0.0), (0.25, 0.0)],
-        };
-        plan.sort();
-        assert_eq!(plan.resonators, vec![(0.0, 0.0), (0.25, 0.0), (0.5, 0.0)]);
     }
 }

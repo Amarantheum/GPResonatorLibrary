@@ -75,7 +75,6 @@ pub fn scale_audio(audio: &mut [Vec<f64>; 2]) {
 }
 
 pub fn combine_channels(audio: &[Vec<f64>]) -> Vec<f64> {
-    let div = audio.len();
     let mut out = Vec::with_capacity(audio[0].len());
     for a in audio {
         for (i, s) in a.iter().enumerate() {
