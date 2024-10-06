@@ -1,13 +1,9 @@
 //! Implementation of the [`ScaledResonatorPlanner`] used for building resonators.
 //! This method builds a resonator array by setting a uniform decay rate for all resonators and scaling each resonator's gain to match the amplitude of the corresponding peak in the spectrum.
-use std::{f64::consts::PI};
-use crate::fft::{FftCalculator, window::{Rectangular, WindowFunction}};
-use find_peaks::{PeakFinder};
-use gp_resonator::resonator_array::ConjPoleResonatorArray;
-use serde::{Serialize, Deserialize};
-use crate::{ResonatorPlan, ResonatorArrayPlan};
-
-
+use std::f64::consts::PI;
+use crate::fft::{window::{Rectangular, WindowFunction}, FftCalculator};
+use find_peaks::PeakFinder;
+use crate::{ResonatorPlan, ResonatorArrayPlan, ResonatorBuilder};
 
 /// A type used to plan the creation of a resonator array using the scaled method.
 /// Uses a builder pattern to set the parameters for the planner.
@@ -23,21 +19,18 @@ pub struct ScaledResonatorPlanner {
     min_freq: Option<f64>,
     /// value from 0.0 to 1.0 where 1.0 corresponds to sample rate
     max_freq: Option<f64>,
-    /// Sample rate of the audio
-    sample_rate: f64,
 }
 
 impl ScaledResonatorPlanner {
     /// Initialize a new empty resonator planner. Initializes all values to None.
     #[inline]
-    pub fn new(sample_rate: f64) -> Self {
+    pub fn new() -> Self {
         Self {
             min_prominence: None,
             min_threshold: None,
             max_num_peaks: None,
             min_freq: None,
             max_freq: None,
-            sample_rate,
         }
     }
 
@@ -81,8 +74,8 @@ impl ScaledResonatorPlanner {
         (log_spec_index + min_bin) as f64 / spec_size as f64 * PI * 2.0
     }
 
-    /// Perform the calculations with the planner to create a [`ScaledResonatorPlan`].
-    pub fn plan(&self, audio: &[f64]) -> ResonatorArrayPlan {
+    #[inline]
+    fn plan(&self, audio: &[f64], sample_rate: f64) -> ResonatorArrayPlan {
         if audio.len() < 3 {
             panic!("Audio length must be at least 3");
         }
@@ -129,7 +122,7 @@ impl ScaledResonatorPlanner {
         // number of resonators in output array
         let n = peaks.len().min(self.max_num_peaks.unwrap_or(100));
         
-        let mut plan = ResonatorArrayPlan::with_capacity(n, self.sample_rate);
+        let mut plan = ResonatorArrayPlan::with_capacity(n, sample_rate);
 
         for i in 0..n {
             let bin = peaks[i].middle_position();
@@ -143,11 +136,16 @@ impl ScaledResonatorPlanner {
     }
 }
 
+impl ResonatorBuilder for ScaledResonatorPlanner {
+    fn plan(&self, audio: &[f64], sample_rate: f64) -> ResonatorArrayPlan {
+        self.plan(audio, sample_rate)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::random;
     use wav_util::*;
     use bode_plot::*;
     use bode_plot::plot::BodePlotTransferFunction;
@@ -156,11 +154,11 @@ mod tests {
     fn test_scaled_peak_planner() {
         let ([chan1, _chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
 
-        let plan = ScaledResonatorPlanner::new(48_000_f64)
+        let plan = ScaledResonatorPlanner::new()
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
-            .plan(&chan1[..]);
+            .plan(&chan1[..], sample_rate as f64);
 
         let mut array = plan.build_resonator_array().unwrap();
 
@@ -183,11 +181,11 @@ mod tests {
     fn test_scaled_peak_planner_buffer() {
         let ([chan1, _chan2], sample_rate) = read_wave("./tests/fm.wav").unwrap();
 
-        let plan = ScaledResonatorPlanner::new(48_000_f64)
+        let plan = ScaledResonatorPlanner::new()
             .with_max_num_peaks(20)
             .with_min_freq(0.0)
             .with_min_prominence(1.0)
-            .plan(&chan1[..]);
+            .plan(&chan1[..], sample_rate as f64);
 
         let mut array = plan.build_resonator_array().unwrap();
 

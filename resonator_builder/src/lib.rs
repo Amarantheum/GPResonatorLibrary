@@ -6,3 +6,4 @@ mod plan_types;
 
 pub use plan_types::resonator_plan::ResonatorPlan;
 pub use plan_types::resonator_array_plan::ResonatorArrayPlan;
+pub use plan_types::ResonatorBuilder;

@@ -1,5 +1,4 @@
 //! This module contains the [`FftCalculator`] and various other types used by the resonator builder library to do calculations in the frequency domain.
-use std::sync::Arc;
 use rustfft::algorithm::Radix4;
 use std::error::Error;
 use rustfft::num_complex::Complex;

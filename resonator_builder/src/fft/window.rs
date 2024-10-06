@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 pub type RealWindowFn = fn(&mut [f64]);
 
-pub fn null_window_fn(buf: &mut [f64]) {}
+pub fn null_window_fn(_buf: &mut [f64]) {}
 
 pub trait WindowFunction {
     // applies window function to the buffer
@@ -28,7 +28,7 @@ impl WindowFunction for BlackmanHarris {
 pub struct Rectangular;
 
 impl WindowFunction for Rectangular {
-    fn real_window(buffer: &mut [f64]) {
+    fn real_window(_buffer: &mut [f64]) {
         ()
     }
 }
