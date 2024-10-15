@@ -4,7 +4,7 @@ use std::f64::consts::PI;
 use bode_plot::plot::BodePlotTransferFunction;
 use num_complex::Complex;
 
-use crate::resonator::ConjPoleResonator;
+use crate::resonators::ConjPoleResonator;
 
 // used to keep track of the state of resonators to make process_buf treat new data as part of old data
 #[derive(Debug, Clone)]

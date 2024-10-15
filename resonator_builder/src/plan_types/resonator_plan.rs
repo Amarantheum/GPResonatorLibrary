@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use gp_resonator::resonator::ConjPoleResonator;
+use gp_resonator::resonators::ConjPoleResonator;
 use super::ResonatorPlanError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

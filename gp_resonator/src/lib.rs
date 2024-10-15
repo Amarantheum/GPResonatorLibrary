@@ -3,14 +3,14 @@
 //! You are probably looking for [`crate::resonator_array::ConjPoleResonatorArray`].
 pub use num_complex::Complex;
 
-pub mod resonator;
+pub mod resonators;
 pub mod resonator_array;
 
 #[cfg(test)]
 mod tests {
     use bode_plot::{create_plot, plot::{BodePlotTransferFunction, LTISystem}, DEFAULT_WIDTH, DEFAULT_HEIGHT, create_simulation_plot}; 
     use std::{f64::consts::PI};
-    use crate::resonator::ConjPoleResonator;
+    use crate::resonators::ConjPoleResonator;
     use statrs::statistics::*;
 
     #[test]

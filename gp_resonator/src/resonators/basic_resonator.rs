@@ -1,8 +1,4 @@
-//! This module contains useful abstractions for resonating filters.
-//! You are probably looking for [`ConjPoleResonator`].
-
 use std::f64::consts::PI;
-
 use bode_plot::plot::{BodePlotTransferFunction, LTISystem};
 use num_complex::Complex;
 
