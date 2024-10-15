@@ -1,9 +1,11 @@
 use num_complex::Complex;
 use nalgebra::DMatrix;
 
+use crate::ResonatorPlan;
+
 pub struct ARRational {
-    coefficients: Vec<Complex<f64>>,
     poles: Vec<Complex<f64>>,
+    partial_fraction_coefficients: Vec<Complex<f64>>,
 }
 
 impl ARRational {
@@ -22,16 +24,19 @@ impl ARRational {
         for c in coefficients {
             complex_coefficients.push(Complex::new(c, 0.0));
         }
+
+        let partial_fraction_coefficients = Self::get_partial_fraction_coefficients(&complex_coefficients, &poles);
+
         Self {
-            coefficients: complex_coefficients,
             poles,
+            partial_fraction_coefficients,
         }
     }
 
     fn get_partial_fraction_coefficients(coefficients: &Vec<Complex<f64>>, poles: &Vec<Complex<f64>>) -> Vec<Complex<f64>> {
         let coefficient_matrix = Self::get_coefficient_matrix(coefficients, poles);
         // solve Ax = b
-        // where A is the coefficient matrix and b is [0 0 ... 1]
+        // where A is the coefficient matrix (each factor is a column) and b is [0 0 ... 1]
         let coefficient_matrix = DMatrix::from_fn(coefficient_matrix.len(), coefficient_matrix[0].len(), |i, j| coefficient_matrix[j][i]);
         let b = DMatrix::from_fn(coefficient_matrix.nrows(), 1, |i, _| if i == poles.len() - 1 { Complex::new(1.0, 0.0) } else { Complex::new(0.0, 0.0) });
 
