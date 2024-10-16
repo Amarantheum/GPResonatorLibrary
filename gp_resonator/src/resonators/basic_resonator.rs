@@ -122,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_resonator_sections() {
-        let mut array = ConjPoleResonator::new_polar(0.99, PI / 32.0, 1.0);
+        let array = ConjPoleResonator::new_polar(0.99, PI / 32.0, 1.0);
         let ([chan1, chan2], _) = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
         let mut out_chan2 = out_chan1.clone();
