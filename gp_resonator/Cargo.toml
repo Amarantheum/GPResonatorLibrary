@@ -12,3 +12,7 @@ hound = "3.5.0"
 num-complex = "0.4.2"
 rand = "0.8.5"
 statrs = "0.16.0"
+libm = "0.2.8"
+
+[dev-dependencies]
+float_eq = "1.0.1"
