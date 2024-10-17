@@ -41,9 +41,10 @@ impl PhasedConjPoleResonator {
     /// # Arguments
     /// * `mag` - The magnitude of the complex number (must be in range [0, 1))
     /// * `arg` - The argument of the commplex number (must be in range [0, π])
+    /// * `phase` - The phase of the resonator
     /// * `gain` - The gain of the filter
     #[inline]
-    pub fn new_polar(mag: f64, arg: f64, phase: f64, gain: f64) -> Self {
+    pub fn new_with_phase(mag: f64, arg: f64, phase: f64, gain: f64) -> Self {
         debug_assert!(mag < 1.0 && mag >= 0.0);
         debug_assert!(arg >= 0.0 && arg <= PI);
         debug_assert!(phase >= 0.0 && phase <= 2.0 * PI);
@@ -59,8 +60,16 @@ impl PhasedConjPoleResonator {
         }
     }
 
+    /// Create a new [`PhasedConjPoleResonator`] given a complex number in polar form and constants for x_0 and x_1.
+    /// x_0_const and x_1_const are used in the difference equation for the resonator (x_0_const * x[n] + x_1_const * x[n-1]).
+    /// The poles will be at the location of the complex number and its conjugate.
+    /// # Arguments
+    /// * `mag` - The magnitude of the complex number (must be in range [0, 1))
+    /// * `arg` - The argument of the commplex number (must be in range [0, π])
+    /// * `x_0_const` - The constant for x[n]
+    /// * `x_1_const` - The constant for x[n-1]
     #[inline]
-    pub fn new_polar_x0_x1(mag: f64, arg: f64, x_0: f64, x_1: f64) -> Self {
+    pub fn new_with_consts(mag: f64, arg: f64, x_0: f64, x_1: f64) -> Self {
         debug_assert!(mag < 1.0 && mag >= 0.0);
         debug_assert!(arg >= 0.0 && arg <= PI);
         let mut phase = ((x_1 / x_0 / mag + arg.cos()) / arg.sin()).atan();
@@ -196,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_resonator_sections() {
-        let resonator = PhasedConjPoleResonator::new_polar(0.9999, PI / 32.0, 0.0, 1.0);
+        let resonator = PhasedConjPoleResonator::new_with_phase(0.9999, PI / 32.0, 0.0, 1.0);
         let ([chan1, chan2], _) = read_wave("audio/test_noise.wav").unwrap();
         let mut out_chan1 = vec![0_f64; chan1.len()];
         let mut out_chan2 = out_chan1.clone();
@@ -214,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_impulse_response() {
-        let resonator = PhasedConjPoleResonator::new_polar(0.99999, PI / 256.0, PI / 2.0, 1.0);
+        let resonator = PhasedConjPoleResonator::new_with_phase(0.99999, PI / 256.0, PI / 2.0, 1.0);
         let mut impulse = vec![0.0; 100000];
         impulse[0] = 1.0;
         let mut response = vec![0.0; impulse.len()];
@@ -242,8 +251,8 @@ mod tests {
         let mag = 0.9;
         let arg = PI / 4.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs_all <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs_all <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
 
@@ -252,8 +261,8 @@ mod tests {
         let mag = 0.9;
         let arg = PI / 4.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs_all <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs_all <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
     }
@@ -265,8 +274,8 @@ mod tests {
         let mag = 0.99;
         let arg = PI / 2.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs_all <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs_all <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
 
@@ -275,8 +284,8 @@ mod tests {
         let mag = 0.99;
         let arg = PI / 2.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
     }
@@ -288,8 +297,8 @@ mod tests {
         let mag = 0.99;
         let arg = PI / 2.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs_all <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs_all <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
 
@@ -298,8 +307,8 @@ mod tests {
         let mag = 0.99;
         let arg = PI / 2.0;
 
-        let resonator1 = PhasedConjPoleResonator::new_polar(mag, arg, phase, gain);
-        let resonator2 = PhasedConjPoleResonator::new_polar_x0_x1(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
+        let resonator1 = PhasedConjPoleResonator::new_with_phase(mag, arg, phase, gain);
+        let resonator2 = PhasedConjPoleResonator::new_with_consts(mag, arg, resonator1.x_0_const, resonator1.x_1_const);
         assert_float_eq!(resonator1.phase, resonator2.phase, abs <= 1e-10, "Phase: {} != {}", resonator1.phase, resonator2.phase);
         assert_float_eq!(resonator1.gain, resonator2.gain, abs <= 1e-10, "Gain: {} != {}", resonator1.gain, resonator2.gain);
     }

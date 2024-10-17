@@ -4,7 +4,7 @@
 pub use num_complex::Complex;
 
 pub mod resonators;
-pub mod resonator_array;
+pub mod resonator_arrays;
 
 #[cfg(test)]
 mod tests {

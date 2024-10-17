@@ -3,7 +3,7 @@
 use std::f64::consts::PI;
 use crate::fft::{window::{Rectangular, WindowFunction}, FftCalculator};
 use find_peaks::PeakFinder;
-use crate::{ResonatorPlan, ResonatorArrayPlan, ResonatorBuilder};
+use crate::plan_types::{BasicResonatorPlan, BasicResonatorArrayPlan, BasicResonatorBuilder};
 
 /// A type used to plan the creation of a resonator array using the scaled method.
 /// Uses a builder pattern to set the parameters for the planner.
@@ -75,7 +75,7 @@ impl ScaledResonatorPlanner {
     }
 
     #[inline]
-    fn plan(&self, audio: &[f64], sample_rate: f64) -> ResonatorArrayPlan {
+    fn plan(&self, audio: &[f64], sample_rate: f64) -> BasicResonatorArrayPlan {
         if audio.len() < 3 {
             panic!("Audio length must be at least 3");
         }
@@ -122,13 +122,13 @@ impl ScaledResonatorPlanner {
         // number of resonators in output array
         let n = peaks.len().min(self.max_num_peaks.unwrap_or(100));
         
-        let mut plan = ResonatorArrayPlan::with_capacity(n, sample_rate);
+        let mut plan = BasicResonatorArrayPlan::with_capacity(n, sample_rate);
 
         for i in 0..n {
             let bin = peaks[i].middle_position();
             let arg = Self::slice_index_to_theta(bin, min_bin, spec_size);
             let gain = spec_slice[bin] / spec_max;
-            let resonator_plan = ResonatorPlan::new(0.9999, arg, gain);
+            let resonator_plan = BasicResonatorPlan::new(0.9999, arg, gain);
             plan.resonators.push(resonator_plan);
         }
 
@@ -136,8 +136,8 @@ impl ScaledResonatorPlanner {
     }
 }
 
-impl ResonatorBuilder for ScaledResonatorPlanner {
-    fn plan(&self, audio: &[f64], sample_rate: f64) -> ResonatorArrayPlan {
+impl BasicResonatorBuilder for ScaledResonatorPlanner {
+    fn plan(&self, audio: &[f64], sample_rate: f64) -> BasicResonatorArrayPlan {
         self.plan(audio, sample_rate)
     }
 }

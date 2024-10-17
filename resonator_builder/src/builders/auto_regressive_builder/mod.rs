@@ -1,5 +1,5 @@
 use auto_regressive::AutoRegressiveModel;
-use crate::{ResonatorPlan, ResonatorArrayPlan};
+use crate::plan_types::{PhasedResonatorPlan, PhasedResonatorArrayPlan};
 
 mod rational_fn;
 

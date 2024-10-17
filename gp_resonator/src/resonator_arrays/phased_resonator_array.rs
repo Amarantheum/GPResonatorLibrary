@@ -116,7 +116,7 @@ impl PhasedResonatorArray {
         let r = Self::decay_to_mag(self.sample_rate, decay);
         // normalize gain
         let gain = gain * r * arg.sin();
-        self.resonators.push((ConjPoleResonatorState::default(), PhasedConjPoleResonator::new_polar(r, arg, phase, gain)));
+        self.resonators.push((ConjPoleResonatorState::default(), PhasedConjPoleResonator::new_with_phase(r, arg, phase, gain)));
         Ok(())
     }
 

@@ -1,16 +1,16 @@
 use serde::{Serialize, Deserialize};
 use gp_resonator::resonators::ConjPoleResonator;
-use super::ResonatorPlanError;
+use super::BasicResonatorPlanError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ResonatorPlan {
+pub struct BasicResonatorPlan {
     mag: f64,
     arg: f64,
     gain: f64,
 }
 
-impl ResonatorPlan {
-    /// Create a new [`ResonatorPlan`] with the given magnitude, argument, and gain.
+impl BasicResonatorPlan {
+    /// Create a new [`BasicResonatorPlan`] with the given magnitude, argument, and gain.
     /// # Arguments
     /// * `mag` - The magnitude of the resonator (must be in range [0, 1))
     /// * `arg` - The argument of the resonator (must be in range [0, π])
@@ -33,7 +33,7 @@ impl ResonatorPlan {
 }
 
 // getters and setters
-impl ResonatorPlan {
+impl BasicResonatorPlan {
     /// Get the magnitude of the resonator.
     #[inline]
     pub fn mag(&self) -> f64 {
@@ -54,9 +54,9 @@ impl ResonatorPlan {
 
     /// Set the magnitude of the resonator. The magnitude must be in the range [0, 1).
     #[inline]
-    pub fn set_mag(&mut self, mag: f64) -> Result<(), ResonatorPlanError> {
+    pub fn set_mag(&mut self, mag: f64) -> Result<(), BasicResonatorPlanError> {
         if mag < 0.0 || mag >= 1.0 {
-            return Err(ResonatorPlanError::InvalidMagnitude(mag));
+            return Err(BasicResonatorPlanError::InvalidMagnitude(mag));
         }
         self.mag = mag;
         Ok(())
@@ -70,9 +70,9 @@ impl ResonatorPlan {
 
     /// Set the argument of the resonator. The argument must be in the range [0, π].
     #[inline]
-    pub fn set_arg(&mut self, arg: f64) -> Result<(), ResonatorPlanError> {
+    pub fn set_arg(&mut self, arg: f64) -> Result<(), BasicResonatorPlanError> {
         if arg < 0.0 || arg > std::f64::consts::PI {
-            return Err(ResonatorPlanError::InvalidArgument(arg));
+            return Err(BasicResonatorPlanError::InvalidArgument(arg));
         }
         self.arg = arg;
         Ok(())

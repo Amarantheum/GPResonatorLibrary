@@ -1,7 +1,7 @@
 use num_complex::Complex;
 use nalgebra::DMatrix;
 
-use crate::ResonatorPlan;
+use crate::plan_types::PhasedResonatorArrayPlan;
 
 pub struct ARRational {
     poles: Vec<Complex<f64>>,

@@ -1,17 +1,17 @@
 use serde::{Serialize, Deserialize};
-use gp_resonator::resonator_array::ConjPoleResonatorArray;
-use super::resonator_plan::ResonatorPlan;
-use super::ResonatorPlanError;
+use gp_resonator::resonator_arrays::PhasedResonatorArray;
+use super::phased_resonator_plan::PhasedResonatorPlan;
+use super::PhasedResonatorPlanError;
 
 /// A type representing a plan for building a resonator array using the scaled method.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResonatorArrayPlan {
+pub struct PhasedResonatorArrayPlan {
     /// Each value corresponds to (theta, gain) for a resonator
-    pub resonators: Vec<ResonatorPlan>,
+    pub resonators: Vec<PhasedResonatorPlan>,
     pub sample_rate: f64,
 }
 
-impl ResonatorArrayPlan {
+impl PhasedResonatorArrayPlan {
     /// Initialize an empty resonator plan.
     /// # Arguments
     /// * `sample_rate` - The sample rate of the resonator plan
@@ -37,16 +37,16 @@ impl ResonatorArrayPlan {
 
     /// Build a resonator array from this plan.
     #[inline]
-    pub fn build_resonator_array(&self) -> Result<ConjPoleResonatorArray, &'static str> {
-        let mut res_array = ConjPoleResonatorArray::new(self.sample_rate, self.resonators.len());
-        for peak in &self.resonators {
-            res_array.add_resonator_raw(peak.get_conj_pole_resonator());
+    pub fn build_resonator_array(&self) -> Result<PhasedResonatorArray, &'static str> {
+        let mut res_array = PhasedResonatorArray::new(self.sample_rate, self.resonators.len());
+        for resonator in &self.resonators {
+            res_array.add_resonator_raw(resonator.get_phased_resonator());
         }
         Ok(res_array)
     }
 
     /// Obtain an iterator over the resonators in this plan.
-    pub fn iter(&self) -> std::slice::Iter<ResonatorPlan> {
+    pub fn iter(&self) -> std::slice::Iter<PhasedResonatorPlan> {
         self.resonators.iter()
     }
 
@@ -92,8 +92,8 @@ impl ResonatorArrayPlan {
     }
 }
 
-impl IntoIterator for ResonatorArrayPlan {
-    type Item = ResonatorPlan;
+impl IntoIterator for PhasedResonatorArrayPlan {
+    type Item = PhasedResonatorPlan;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -107,12 +107,12 @@ impl IntoIterator for ResonatorArrayPlan {
 /// To get the a list of errors without destroying the object, use `errors()`.
 #[derive(Debug)]
 pub struct ResampleResonatorArrayResult {
-    new_plan: ResonatorArrayPlan,
-    errors: Vec<(ResonatorPlan, ResonatorPlanError)>,
+    new_plan: PhasedResonatorArrayPlan,
+    errors: Vec<(PhasedResonatorPlan, PhasedResonatorPlanError)>,
 }
 
 impl ResampleResonatorArrayResult {
-    fn new(new_plan: ResonatorArrayPlan, errors: Vec<(ResonatorPlan, ResonatorPlanError)>) -> Self {
+    fn new(new_plan: PhasedResonatorArrayPlan, errors: Vec<(PhasedResonatorPlan, PhasedResonatorPlanError)>) -> Self {
         Self {
             new_plan,
             errors,
@@ -120,12 +120,12 @@ impl ResampleResonatorArrayResult {
     }
 
     /// Unwrap the result without checking for errors.
-    pub fn unwrap_unchecked(self) -> ResonatorArrayPlan {
+    pub fn unwrap_unchecked(self) -> PhasedResonatorArrayPlan {
         self.new_plan
     }
 
     /// Get the list of errors that occurred during resampling.
-    pub fn errors(&self) -> &Vec<(ResonatorPlan, ResonatorPlanError)> {
+    pub fn errors(&self) -> &Vec<(PhasedResonatorPlan, PhasedResonatorPlanError)> {
         &self.errors
     }
 
@@ -137,12 +137,12 @@ impl ResampleResonatorArrayResult {
     /// Unwrap the result, adding any resonators with args out of range [0, π] to the new plan.
     /// Only use this if you are sure that you want resonators with args out of range [0, π].
     /// Otherwise check for errors with `has_errors()` and handle them accordingly.
-    pub fn unwrap_allow_errors(self) -> ResonatorArrayPlan {
+    pub fn unwrap_allow_errors(self) -> PhasedResonatorArrayPlan {
         let mut plan = self.new_plan;
         let errors = self.errors;
         for (mut resonator, error) in errors {
             let new_arg = match error {
-                ResonatorPlanError::InvalidArgument(arg) => {
+                PhasedResonatorPlanError::InvalidArgument(arg) => {
                     arg
                 },
                 _ => panic!("There is a bug in the code if this shows up."),
@@ -160,15 +160,15 @@ mod tests {
 
     #[test]
     fn test_sort() {
-        let mut plan = ResonatorArrayPlan::new(48_000.0);
-        plan.resonators.push(ResonatorPlan::new(0.9, 0.0, 0.0));
-        plan.resonators.push(ResonatorPlan::new(0.9, 0.5, 0.0));
-        plan.resonators.push(ResonatorPlan::new(0.9, 0.25, 0.0));
+        let mut plan = PhasedResonatorArrayPlan::new(48_000.0);
+        plan.resonators.push(PhasedResonatorPlan::new_with_phase(0.9, 0.0, 0.0, 0.0));
+        plan.resonators.push(PhasedResonatorPlan::new_with_phase(0.9, 0.5, 0.0, 0.0));
+        plan.resonators.push(PhasedResonatorPlan::new_with_phase(0.9, 0.25, 0.0, 0.0));
         plan.sort();
         let mut expected = Vec::new();
-        expected.push(ResonatorPlan::new(0.9, 0.0, 0.0));
-        expected.push(ResonatorPlan::new(0.9, 0.25, 0.0));
-        expected.push(ResonatorPlan::new(0.9, 0.5, 0.0));
+        expected.push(PhasedResonatorPlan::new_with_phase(0.9, 0.0, 0.0, 0.0));
+        expected.push(PhasedResonatorPlan::new_with_phase(0.9, 0.25, 0.0, 0.0));
+        expected.push(PhasedResonatorPlan::new_with_phase(0.9, 0.5, 0.0, 0.0));
         assert_eq!(plan.resonators, expected);
     }
 }
